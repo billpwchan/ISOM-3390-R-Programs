@@ -1,0 +1,256 @@
+---
+title: "Homework 2"
+author: "CHAN Pok Wah"
+output:
+  html_document:
+    highlight: tango
+    theme: paper
+    toc: yes
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Note that some of the code blocks in this assignment contain the expression `eval = FALSE`. This tells R Markdown to display the code contained in the block, but not to evaluate it. Remove it if you want to turn off this behavior.
+
+
+
+### Problem 1: `table()`, `tapply()`
+
+The `MASS` package contains a dataset called `Insurance`. Type `?Insurance` in your console to take a look at its help document.
+
+```{r}
+library(MASS)  
+head(Insurance)
+```
+
+
+##### (a) `table()`
+
+Use the `table()` function to produce a contingency table of observation counts across District and Age.
+
+```{r}
+table(Insurance$District, Insurance$Age)
+```
+
+
+
+##### (b) `tapply()`
+
+Use the `tapply()` function to show the average number of Holders across District and Age categories.
+
+```{r}
+# Insert your code here
+tapply(Insurance$Holders, list(Insurance$District, Insurance$Age), mean)
+```
+
+
+##### (c) Total number of Holders by District and Age
+
+Use the `tapply()` function to show the total number of Holders across District and Age. 
+
+```{r}
+# Insert your code here
+tapply(Insurance$Holders, list(Insurance$District, Insurance$Age), sum)
+```
+
+
+
+
+##### (d) Total number of Claims by District and Age
+
+Use the `tapply()` function to show the total number of Claims across District and Age.
+
+
+```{r}
+# Insert your code here
+tapply(Insurance$Claims, list(Insurance$District, Insurance$Age), sum)
+```
+
+##### (e) The rate of Claims per Holder by District and Age
+
+Use your answers from parts (c) and (d) to calculate the rate of Claims per Holder across District and Age.
+
+```{r}
+# Insert your code here
+tapply(Insurance$Claims, list(Insurance$District, Insurance$Age), sum) / tapply(Insurance$Holders, list(Insurance$District, Insurance$Age), sum)
+
+```
+
+*Tip: if an insurance company has 120,000 policy holders and receives 14,000 claims, the rate of claims per holder is 14000/120000 = 0.117.*
+
+ 
+
+
+### Problem 2: Computing and plotting trimmed means
+
+##### (a) Writing a function for calculating the trimmed mean
+
+Write a function that calculates the mean of a numeric vector `x`, ignoring the `s` smallest and `l` largest values (this is a trimmed mean).
+
+E.g., if `x = c(1, 7, 3, 2, 5, 0.5, 9, 10)`, `s = 1`, and `l = 2`, the function would return the mean of `c(1, 7, 3, 2, 5)` (this is `x` with the 1 smallest value (0.5) and the 2 largest values (9, 10) removed).
+
+The function should use the `length()` function to check if x has at least `s + l + 1` values. If `x` is shorter than `s + l + 1`, the function should use the `message()` function to tell the user that the vector can't be trimmed as requested. Check the help document if you don't know the usage of `message()` (`?message`). 
+ast
+If `x` has at least a length of `s + l + 1`, your function should return the trimmed mean.
+
+```{r}
+# here's a function skeleton to get you started
+# fill me in with an informative comment
+# describing what the function does
+trimmedMean <- function(x, s = 0, l = 0) {
+  i = 0
+  oriLength = length(x)
+  while (i < s) {
+    x = x[x!=min(x)]
+    i = i + 1
+  }
+  i = 0
+  while (i < l) {
+    x = x[x!=max(x)]
+    i = i + 1
+  }
+  if (oriLength < 1 + s + l) {
+    message("This Vector can't be trimmed as requested")
+  } else {
+      return(x)
+  }
+# Insert your code here
+}
+trimmedMean(c(1,7,3,2,5,0.5, 9, 10), 1, 2)
+
+```
+
+
+*Tip: it will be useful to recall the `sort()` function that we have used in lectures.*
+
+Note: The `s = 0` and `l = 0` specified in the function definition are the default settings. i.e., this syntax ensures that if s and l are not provided by the user, they are both set to 0. Thus the default behaviour is that the `trimmedMean` function doesn't trim anything, and hence is the same as the `mean` function.
+
+
+##### (b) Applying the function with `mapply()`
+
+```{r}
+# sets seed to make sure everyone's random vectors are generated the same
+set.seed(201611) 
+list.random <- list(x = rnorm(50), y = runif(65), z = rt(100, df = 1.5)) 
+
+# here's a figure showing histograms of the data
+par(mfrow = c(1,3))
+histx<-hist(list.random$x, col = 'lightgrey') 
+histy<-hist(list.random$y, col = 'salmon') 
+histz<-hist(list.random$z, col = 'steelblue')
+```
+
+Now `histx`, `histy`, and `histz` contain the respective information about the three histograms. For example, printing `histx` gives 
+
+ 
+```{r}
+print(histx)
+```
+
+, and the `counts` component gives the number of observations falling in each bin of histogram `histx`:
+
+```{r}
+histx$counts
+```
+
+Using the `mapply` functions with the function from part (a), create a list whose components are the trimmed means of the vectors in `list.random`, taking `s = the number of observations in the first bin` and `l = the number of observations in the last bin`.
+
+
+```{r}
+# Insert your code here
+mapply(trimmedMean, list.random, MoreArgs = list(s = histx$counts[1], l = histx$counts[length(histx)]))
+#mapply(trimmedMean, list.random, histx$counts[1], histx$counts[length(histx)])  #Same Ans. 
+```
+
+
+
+  
+## Problem 3: Practicing the split-apply-combine pattern with the `strikes` data
+
+
+`strikes.csv` contains the data on the political economy of strikes. Read this into your R session and call the resulting data frame `strikes.df`. It has 625 rows and 8 columns and displays its first 5 rows.
+
+```{r}
+strikes.df <- read.csv("https://drive.google.com/uc?export=download&id=1nT40HPs_OTUqELnlVzjNTaxpOJf8VdYs")
+dim(strikes.df)
+summary(strikes.df)
+```
+
+##### (a) Splitting `strikes.df` by country
+
+Use the `split()` function. Call the resulting list `strikes.by.country`, and show the names of elements of the list, as well as the first 5 rows of the data frame for Canada.
+
+```{r}
+# Insert your code here
+strikes.by.country <- split(strikes.df, strikes.df$country)
+head(strikes.by.country$Canada, 5)
+```
+
+##### (b) Computing the average unemployment rate for each country
+
+Use `strikes.by.country` and `sapply()`, compute the average unemployment rate for each country. 
+
+```{r}
+# Insert your code here
+newMean <- function(x) {
+  mean(x$unemployment)
+}
+sapply(strikes.by.country, newMean)
+```
+
+##### (c)  What country has the highest average unemployment rate? The lowest?
+
+<span style="color: darkred; font-size:16pt"> The Ireland has the highest average unemployment rate. The switzerland has the lowest average unemployment rate. </span>
+
+
+##### (d) Using `sapply()` to compute multiple avarages
+
+Using `strikes.by.country` and just one call to `sapply()`, compute the average unemployment rate, inflation rates, and strike volume for each country. The output should be a matrix of dimension 3 x 18. Also, with just the one call to `sapply()`, figure out how to make the output matrix have appropriate row names.
+
+```{r}
+# Insert your code here
+newerMean <- function(x) {
+  return(list(Avg.UR = mean(x$unemployment), Avg.IR = mean(x$inflation), Avg.SV = mean(x$strike.volume)))
+}
+sapply(strikes.by.country, newerMean)
+```
+
+
+##  Problem 4: Rewrite a `for` loop with the `tapply()` function
+
+The following code implements the k-fold cross validation with a `for` loop. Rewrite the code between the lines of hashtags using `tapply()`.
+
+```{r}
+default.data <- read.csv("https://drive.google.com/uc?export=download&id=1iTmjYcOf7cmnQz76Rart9ZbJGrhl7QXk")
+set.seed(1)
+
+#######################
+
+partition <- (1:nrow(default.data)) %% 10 + 1 # k = 10
+fold <- sample(partition, length(partition))
+
+logistic.fit <- vector("list", 10)
+logistic.prob <- vector("numeric", 10000)
+
+for (i in 1:10) {
+  logistic.fit[[i]] <- glm(default ~ student + balance, family = binomial, data = default.data[fold!= i,])
+  logistic.prob[fold == i] <- predict(logistic.fit[[i]], default.data[fold==i, ],  type="response")
+}
+str(logistic.prob)
+
+#######################
+```
+
+```{r}
+# Said by Dr. Jia, this format is acceptable as a result.
+
+result <- tapply(1:nrow(default.data), fold, function(x) {
+  temp <- glm(default ~ student + balance, family = binomial, data = default.data[-x,])
+  predict(temp, default.data[x,], type="response")
+})
+str(result)
+
+```

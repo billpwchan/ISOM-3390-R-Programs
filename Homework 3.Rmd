@@ -1,0 +1,194 @@
+---
+title: "Homework 3"
+author: "Chan Pok Wah"
+output:
+  html_document:
+    highlight: tango
+    theme: paper
+    toc: yes
+    toc_depth: 3
+---
+
+Before proceeding to solve the problems, make sure the `tidyverse` collection is installed in your computer. 
+
+Note that some of the code blocks in this assignment contain the expression `eval = FALSE`. This tells R Markdown to display the code contained in the block, but not to evaluate it. Remove it if you want to turn off this behavior.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+library(tidyverse)
+```
+
+### Problem 1: Plotting summary statistics with histograms
+
+The following code generates three random vectors and then produce their histograms, respectively:
+
+```{r}
+# sets seed to make sure everyone's random vectors are generated the same
+set.seed(201611) 
+list.random <- list(x = rnorm(50), y = runif(65), z = rt(100, df = 1.5)) 
+
+# here's a figure showing histograms of the data
+par(mfrow = c(1,3))
+hist(list.random$x, col = 'lightgrey') 
+hist(list.random$y, col = 'salmon') 
+hist(list.random$z, col = 'steelblue')
+```
+
+##### (a) Denoting the means of the three vectors in the respective histograms with vertical lines.
+
+
+```{r}
+# here's a figure showing histograms of the data
+par(mfrow = c(1,3))
+
+# edit here
+hist(list.random$x, col = 'lightgrey') 
+abline(v=mean(list.random$x), col="black", lwd=2)
+hist(list.random$y, col = 'salmon')
+abline(v=mean(list.random$y), col="black", lwd=2)
+hist(list.random$z, col = 'steelblue')
+abline(v=mean(list.random$z), col="black", lwd=2)
+```
+ 
+
+##### (b) Adding density curves to approximate the three histograms.
+
+*Tip: use a probability scale for histograms to allow the density curve to be added.*
+
+```{r}
+# here's a figure showing histograms of the data
+par(mfrow = c(1,3))
+# edit here
+hist(list.random$x, prob=TRUE, col="lightgrey")# prob=TRUE for probabilities not counts
+lines(density(list.random$x), col="blue", lwd=2) # add a density estimate with defaults
+hist(list.random$y, prob=TRUE, col="salmon")# prob=TRUE for probabilities not counts
+lines(density(list.random$y), col="blue", lwd=2) # add a density estimate with defaults
+hist(list.random$z, prob=TRUE, col="steelblue")# prob=TRUE for probabilities not counts
+lines(density(list.random$z), col="blue", lwd=2) # add a density estimate with defaults
+```
+
+
+
+
+## Problem 2: Plotting financial time series for stock prices
+
+`weeklyprice.csv` contains time series data for stock prices for three large Internet companies (Facebook, Google, and Amazon) from Oct. 30, 2012 to Oct. 30, 2017. Load the dataset to create a tibble named `weekly` using `read_csv()` from the `readr` package. 
+
+
+
+```{r}
+weekly <- read_csv("https://drive.google.com/uc?export=download&id=1uAYO3mJYsRPAPXn-ZE5llEYebnZhcdqJ", col_names = TRUE, col_types = cols())
+weekly %>% print(width = Inf)
+```
+
+
+It has 3 rows and 263 columns. Each row stores weekly closing prices for a firm's stock during the aforementioned period. You may notice that the data has the wide format that is perhaps not suitable for plotting.
+
+##### (a) Tidying the data
+
+Tranform the data from the wide format to the long format. The resulting tibble, which is called `weekly_long`, should have three columns, one called `company`, one called `date`, and one called `price`.
+
+```{r}
+# edit here
+weekly_long <- gather(weekly, date, price, "2012-10-29":"2017-10-30")
+print(weekly_long)
+
+```
+
+
+
+##### (b) Plotting multiple data series in one plot
+
+Plot time series of stock prices for the three companies with seperate curves, each having a different color. Try to reproduce the plot given in the assignment description.
+
+*Tip: use the following code to customize the axis representing calendar dates: `axis.Date(side=1, at=seq(min(weekly_long$date), max(weekly_long$date), by="6 mon"), format="%m-%Y",cex.axis=0.7)`*
+
+```{r}
+FB <- weekly_long[weekly_long$company == "FB",]
+GOOG <- weekly_long[weekly_long$company == "GOOG",]
+AMZN <- weekly_long[weekly_long$company == "AMZN", ]
+plot(as.Date(FB$date), FB$price, type="l", xaxt="n", xlab="Date",ylab="Closing Price", main="Time Series of Stock Prices",cex.axis=0.7, xlim=c(as.Date(min(weekly_long$date)), as.Date(max(weekly_long$date))), 
+  ylim=c(min(weekly_long$price), max(weekly_long$price)), col="red")
+lines(as.Date(GOOG$date), GOOG$price, col="blue", type="l")
+lines(as.Date(AMZN$date), AMZN$price, col="green", type="l") 
+minDate <- min(weekly_long$date)
+maxDate <- max(weekly_long$date)
+axis.Date(side=1, at=seq(from = as.Date(minDate), as.Date(maxDate), by="6 mon"), format="%m-%Y",cex.axis=0.7)
+legend("topleft", legend = c("FB", "GOOG", "AMZN"), lty = 1, col=c("red", "blue", "green"))
+
+```
+ 
+
+## Problem 3: Practicing the `dplyr` package with flights data
+
+Download `flights.csv` and `airports` from the Web to create two tibbles named `flights` and `airports`: 
+
+```{r}
+flights<-read_csv("https://drive.google.com/uc?export=download&id=1zAE0s3FA0dvhahex5J44jT5azutDacm0", col_names = TRUE, col_types = cols())
+airports<-read_csv("https://drive.google.com/uc?export=download&id=1LLthXwTC-wqXnsMPU9-nvknIAMixkmH3", col_names = TRUE, col_types = cols())
+## glimpse() is a transposed version of print
+glimpse(flights)
+summary(flights)
+```
+
+
+The `flights` dataset is about all the flights that departed from New Yord City (i.e. airports JFK, LGA or EWR) in 2013. In particular, the interest lies in the following variables:
+
+- `hour`, `minute`: the hour and minute of the departure
+- `arr_delay`: the arrival delay of the incoming plane (in minutes)
+- `dest`: the destination
+
+Note that several variables have ***missing values***.
+
+##### (a) Creating new variables
+
+Create a new variable which encodes a given `hour` and `minute` as one decimal number, i.e. time in hours; that is, for example, 2 hours 45 minutes should be coded to 2.75 hours, because 45 minutes is 45 minutes * (1 hour / 60 minutes) = 0.75 hours. Name this new variable `time` in `flights`.
+
+```{r}
+# edit here
+flights$time <- flights$hour + flights$minute / 60.0
+glimpse(flights)
+
+```
+
+
+##### (b) Plotting the destinations.
+
+Calculate the average value of the arrival delay (`arr_delay`) and the number of departing flights (`n`) for each destination (`dest`) and name the resulting data frame `delay.per.dest`.
+
+Here you can use the summary function `n()` to find the count for each group. When calculating the mean, you should be aware of the existence of the missing values. 
+
+```{r}
+# edit here
+
+delay.per.dest <- summarise(group_by(flights, dest),
+                   arr_delay = mean(flights$arr_delay, na.rm=TRUE),
+                   n = n())
+delay.per.dest
+```
+
+The `airports` dataset contains the coordinates (`lon`, `lat`) of the 1,458 airports. `faa` stands for FAA airport code.
+
+```{r}
+airports
+```
+
+Merge the tibble `delay.per.dest` and `airports` in order to add the coordinates (`lon`, `lat`)  of the airports to `delay.per.dest` using `left_join()` in `dplyr` (type `?left_join` to see how it works).
+
+```{r}
+# edit here
+delay.per.dest <- left_join(delay.per.dest, airports, by = c("dest" = "faa"))
+
+delay.per.dest
+```
+
+Create a scatterplot of the latitude against the longitude and scale the points according to the number of departing planes.
+
+```{r eval=T}
+plot(lat ~ lon, data = delay.per.dest, pch = 19, cex = n / 6000)
+```
+
+<span style="color:blue">Explain what values are represented by the size of the bubbles.</span>
+<span style="color:black">The larger the bubble, the greater the number of departing flights at that location identified by longitute & latitute.</span>
+
+

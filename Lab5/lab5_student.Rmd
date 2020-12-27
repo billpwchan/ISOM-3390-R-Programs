@@ -1,0 +1,179 @@
+---
+title: "Lab 5: Model Tuning with Cross-Validation"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy=TRUE)
+```
+
+
+In data mining, typical model development requires partitioning a dataset into a training set and a test set. A separate test set is a better indication of model generalizability versus in-sample testing. 
+
+However, for small datasets, it can be problematic to set aside a portion of the data for testing, since that data could be used for training, in turn translating to increased representativeness.
+
+**Cross-validation** addresses this issue by partitioning the training data into k disjoint folds. Each fold is reserved as a test set against the remainder, which acts as the training set. Every possible model is thus trained k times. As a result, a more reliable estimate of how well a model generalizes can be obtained for model tuning and comparison.  
+
+In today's lab, we are going to implement the cross-validation algorithm for model tuning in R. In addition to give you a flavor of using R for data mining, this exercise also attempts to bring you a synergy of what we have learned so far about R programming.
+
+The data we are going to work with is a collection of customer default records for a credit card issuer. 
+
+
+```{r}
+default.data <- read.csv("https://drive.google.com/uc?export=download&id=1iTmjYcOf7cmnQz76Rart9ZbJGrhl7QXk")
+str(default.data)
+```
+
+One way to partition the data to k folds involves the introduction of an indexing variable. The following code gives one assignment of 10,000 observation into 10 folds.
+
+```{r}
+set.seed(1)
+partition <- (1:nrow(default.data)) %% 10 + 1 # k = 10
+fold <- sample(partition,length(partition))
+head(data.frame(default.data, fold=fold), n = 20)
+```
+
+Because `default` is a categorical variable, predicting its values is a classification problem. We can fit a logistic regression model to do so.
+
+The `glm()` function in package `stats` fits generalized linear models, a class of models that includes logistic regression. In order to tell R to run a logistic regression, we need to specify the argument `family = binomial` to `glm()`. The following code trains a logistic regression whose linear part is specified as
+
+<div align="center">$w_0+w_1\times student+w_2\times balance$</div>
+
+with observations other than those grouped into fold 1.
+
+```{r}
+logistic.fit <- glm(default ~ student + balance, family = binomial, data = default.data[fold!= 1,])
+```
+
+`summary()` can give us the detailed information about the fitted model:
+
+```{r}
+summary(logistic.fit)
+```
+
+Given the model, the `predict()` function is used to predict the probability of customer defaults for observations being left out from training. The `type = "response"` option tells R to output probabilities of the form $P(Y = 1|X)$. 
+
+```{r}
+logistic.prob <- vector("numeric", 10000) 
+logistic.prob[fold == 1] <- predict(logistic.fit, default.data[fold==1, ],  type="response")
+head(data.frame(default.data, fold=fold, predited_prob=logistic.prob), n = 20)
+```
+
+The out-of-sample class predictions are made based on whether the predicted probability of defaults is greater than or less than 0.5.
+
+```{r}
+logistic.pred <- rep("No", 10000)
+logistic.pred[logistic.prob > .5] <- "Yes"
+head(data.frame(default.data, fold=fold, predited_prob=logistic.prob, prediction = logistic.pred), n = 20)
+```
+
+Consequently, we derive the out-of-sample classification error rate by applying `mean()` to the result of the logical comparison between the actual class and the predicted class of the fold-1 observations: 
+
+```{r}
+mean(default.data[fold==1, "default"]!=logistic.pred[fold==1])
+```
+
+What we've done so far is model training and testing for only one partitioning of the data (i.e., data in fold 2 through 10 vs. data in fold 1). There are another k-1 iterations of this procedure for k-fold cross-validation. Therefore, implementing algorithms for k-fold cross-validation usually needs a `for` loop as shown as follows:
+
+```{r}
+logistic.fit <- vector("list", 10)
+logistic.prob <- vector("numeric", 10000)  
+logistic.pred <- rep("No", 10000)
+
+for (i in 1:10) {
+  
+  logistic.fit[[i]] <- glm(default ~ student + balance, family = binomial, data = default.data[fold!= i,])
+  logistic.prob[fold == i] <- predict(logistic.fit[[i]], default.data[fold==i, ],  type="response")
+
+}
+```
+
+
+A good proxy for the generalization performance of the given model is thus the overall classification error rate. 
+
+```{r}
+logistic.pred[logistic.prob > .5] <- "Yes"
+mean(default.data["default"]!=logistic.pred)
+```
+
+
+Now we are ready to write a function to compare the performance of different logistic regression models using cross-validation.
+
+Suppsoe that the function `model_tuning` allows us to vary data frames and the number of folds used for cross-validation, and for a data frame, allows us to specify the target variable (via a character vector of length 1) and other variables used as predictors (via a character vector of varying lengths). 
+
+The skeleton code for the function is given below:
+
+
+```{r}
+model_tuning <- function(data, target, predictors, k){
+  
+  # prepare some variables such as number of rows, number of predictors, etc...
+  numRow <- nrow(data)
+  numPredictors <- length(predictors)
+  
+  # prepare partition and fold lists
+  partition <- (1:numRow) %% k + 1
+  fold <- sample(partition, length(partition))
+  
+  
+  
+  logistic.fit <- vector("list", k)
+  logistic.prob <- matrix(0, nrow = numRow , ncol= numPredictors)  # modify "xxx" to a correct variable
+  #logistic.pred <- matrix("No", nrow = numRow, ncol = numPredictors)
+  colMeansMat <- matrix(rep(data[target],numPredictors), ncol = numPredictors)
+
+  for (numP in 1:numPredictors) {
+      logistic.pred <- rep("No", numRow)
+      parameterStr <- "default ~ "
+      for (tempIndex in 1:numP) {
+          if (tempIndex != numP) {
+            parameterStr <- paste0(parameterStr, predictors[tempIndex], " + ")
+          } else {
+            parameterStr <- paste0(parameterStr, predictors[tempIndex])
+          }
+      }
+      print(parameterStr)
+      for (i in 1:k) {
+         logistic.fit[[i]] <- glm(as.formula(parameterStr), family = binomial, data = data[fold!=i,]) 
+         logistic.prob[fold == i, numP] <- predict(logistic.fit[[i]], data[fold==i, ],  type="response")
+      }
+      logistic.pred[logistic.prob[, numP] > 0.5] <- "Yes"
+      print(mean(data["default"]!=logistic.pred))
+  }
+}
+
+```
+
+One more remark: if `predictors` takes `c("student", "balance", "income")` as its argument, then the following three models are evaluated sequentially:
+
+Model 1: $w_0+w_1\times student$ 
+
+Model 2: $w_0+w_1\times student+w_2\times balance$ 
+
+Model 3: $w_0+w_1\times student+w_2\times balance +w_3\times income$
+
+One tip for you to construct the three formulae iteratively passed to `glm()` is 
+
+1. use `paste0()` to concatenate strings, and 
+2. use `as.formula()` to convert strings to correponding formulae.
+
+
+
+Drop the chunck option `eval=FALSE` and execute the code. Which model gives us the best performance given the data? 
+
+```{r eval=TRUE}
+#set.seed(3)
+model_tuning(default.data, "default", c("student", "balance", "income"), 10)
+
+
+## expected output:
+##
+##                default~student        default~student+balance 
+##                         0.0333                         0.0266 
+## default~student+balance+income 
+##                         0.0268
+
+```
+
+Think about how we can apply the notion of function factories to create model tuning functions with different k values  for cross-validation.
+

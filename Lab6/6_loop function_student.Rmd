@@ -1,0 +1,118 @@
+---
+title: "Lab 6: Practicing Advanced Loop Functions and the Split-Apply-Combine Manipulation"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy=TRUE)
+```
+
+In today's lab, we are going to use proper functions in R's apply family to solve data analysis problems that involve the "Split-Apply-Combine" paradigm.
+
+Gross domestic product (GDP) is a measure of the total market value of all goods and services produced in a given country in a given year.
+
+An important claim in economics is that the rate of GDP growth is closely related to the level of government debt, specifically with the ratio of the government's debt to the GDP.
+
+The `debt.csv` file we are going to work with contains measurements of GDP growth and of the debt-to-GDP ratio for twenty countries around the world, from the 1940s to 2010.  Note that not every country has data for the same years, and some years in the middle of the period are missing data for some countries but not others.
+
+Load the data into a data frame called `debt` and investigate its structure using `str()`.  
+
+```{r}
+debt <- read.csv("https://drive.google.com/uc?export=download&id=1DL0TRqA7hL_KYsktVRV8Rt70aZdK7PPj",sep = ",", header = T)
+str(debt)
+levels(debt$Country)
+levels(as.factor(debt$Year))
+```
+
+
+1. Use `split()` together with `lapply()` or `sapply()` to calculate the average GDP growth rate for each country (averaging over years). The average growth rates for Australia and the Netherlands should be 3.72 and 3.03.
+
+```{r}
+##edit here
+result <- split(debt$growth,debt$Country)
+lapply(result, mean)
+
+
+```
+
+2. Use `tapply()` to calculate the average GDP growth rate for each year (averaging over countries). The average growth rates for 1972 and 1989 should be 5.63 and 3.19, respectively.
+
+
+```{r}
+##edit here
+
+tapply(debt$growth, debt$Year, mean)
+
+
+
+ 
+```
+
+3. The function `cor(x, y)` calculates the correlation coefficient between two vectors `x` and `y`. The command below gives us the correlation coefficient between the GDP growth and the debt ratio over the whole data set (all countries, all years). 
+
+```{r}
+cor(debt$growth, debt$ratio)
+```
+
+a. Use `mapply()` to calculate the correlation coefficient for each country. The mean of these correlations should be -0.1778. 
+
+Hint: first split values of the two variables into groups.
+
+```{r}
+##edit here
+
+growth_var <- split(debt$growth, debt$Country)
+ratio_var <- split(debt$ratio, debt$Country)
+cor_growth_ratio_by_country <- mapply(cor, growth_var, ratio_var)
+
+
+mean(cor_growth_ratio_by_country)
+
+```
+
+b. Define a vectorized version of `cor()` and name it `vectorized_cor()`. Recall that `Vectorize()` takes as the arguments a function and its arguments that we want to vectorize and returns a new function.
+
+```{r}
+##edit here
+
+vectorized_cor <- Vectorize(cor, c('x', 'y'))
+result <- vectorized_cor(growth_var, ratio_var)
+print(result)
+
+```
+
+
+c. Write the code with `tapply()` to achieve the same goal. 
+
+Hint: use the index vector as the 1st argument to `tapply()` and an anonymous function that realizes value reference by index as the 3rd argument.
+
+```{r}
+##edit here
+tapply(1:nrow(debt), debt$Country, function(row) {
+  cor(debt[row, "growth"], debt[row, "ratio"])
+})
+
+```
+
+
+
+d. `cor()` can also takes a single matrix or data frame and return a correlation matrix of its columns as shown below:
+
+```{r}
+cor(debt[, c("growth", "ratio")])
+```
+
+How can we use `lapply()` with `split()` to calcualte the group-wise coefficient matrices?
+
+```{r}
+##edit here
+result <- split(debt[, c("growth", "ratio")], debt$Country)
+
+lapply(result, cor)
+
+
+```
+
+

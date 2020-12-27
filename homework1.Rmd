@@ -1,0 +1,312 @@
+---
+title: "Homework 1"
+author: "CHAN Pok Wah 20259267"
+output:
+  html_document:
+    highlight: tango
+    theme: paper
+    toc: yes
+    toc_depth: 3
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+Note that some of the code blocks contain the expression `eval = FALSE`. This tells R Markdown to display the code contained in the block, but not to evaluate it. Remove it if you want to turn off this behavior.
+
+### Problem 1: Simple logical operations
+
+##### (a) Checking equality.
+
+Given a variable `x`, write a logical expression that evaluates to `TRUE` if the variable `x` is equal to 5369 (the numeric value).  
+
+```{r}
+# Insert your code here
+x <- 5369
+x == 5369
+```
+
+##### (b) Checking inequality.
+
+Given a variable `x`, write a logical expression that evaluates to `TRUE` if the variable `x` is *not* `NA` (i.e., is not missing).
+
+```{r}
+# Insert your code here
+x <- NA
+!is.na(x)
+```
+
+##### (c) Checking if a number is in a given range. 
+
+Given a (possibly negative) number `x`, write a logical expression that returns `TRUE` if and only if `x` is smaller than `-12` or bigger than `29`.  
+
+```{r}
+# Insert your code here
+x <- -20
+x < -12 || x > 29
+```
+
+##### (d) A more complicated example.
+
+Given an integer number `x`, write a logical expression that returns `TRUE` if and only if `x` is an **odd** number between -8 and 12 or 100 and 150.  
+
+```{r }
+# Insert your code here
+x <- 111
+x %% 2 == 1 && ((-8 <= x && x <= 12) || (100 <= x && x <= 150))
+```
+
+**Tip**: Recall the modulus operator we saw in lectures: `%%`.  For integers `x` and `y`, `x %% y` is the remainder of `x` divided by `y`.  
+
+### Problem 2: Vector logical operations
+
+##### (a) R has two kinds of logical operators implemented, single (`&`, `|`) and double (`&&`, `||`).  
+
+One of these operators takes advantage of something called *lazy evaluation* while the other does not.  They also don't behave the same way when applied to *vectors*.  
+
+To help you get started, try out the following two examples in your console:
+
+```{r eval = FALSE}
+# Example:  The variable y.prob2a is never defined.  
+# (Do not define it!)
+# What happens when you run this code?
+x.prob2a <- 5
+(x.prob2a < 10) | (y.prob2a > 2)
+(x.prob2a < 10) || (y.prob2a > 2)
+```
+
+```{r eval = FALSE}
+# Define vectors
+x.prob2a.vec <- c(TRUE, FALSE, FALSE)
+y.prob2a.vec <- c(FALSE, TRUE, FALSE)
+
+# Apply various logical operations to see what happens
+x.prob2a.vec & y.prob2a.vec
+x.prob2a.vec && y.prob2a.vec
+x.prob2a.vec | y.prob2a.vec
+x.prob2a.vec || y.prob2a.vec
+```
+
+Please explain what's happening.  Write up a brief explanation below.
+
+
+<span style="color: darkred; font-size:16pt">
+Lazy evaluation is a programming strategy that allows a symbol to be evaluated only when needed. For instance, in the first example (x.prob2a < 10) | (y.prob2a > 2), if x.prob2a contains a value larger or equal to 10, then the second y.prob2a will never be evaluated, thus no exception arised due to Object 'y.prob2a' not defined.
+</span>
+
+
+##### (b) Using `all()` and `any()`
+
+`all()` and `any()` are useful on logical vectors. Since they were not formally introduced in our lectures, you may not know their possible uses. R provides extensive facilities for accessing documentation for R functions, data sets, and other objects, including the `help()` function or `?` help operator. You can use them to access the documentation pages for the two functions and answer the following questions. 
+
+Two people were asked to give their preferences between two options: [Facebook, Twitter], [Firefox, Chrome], [Mac, PC], [Summer, Winter].  Their results are given below.
+
+```{r}
+alice.prefs <- c("Twitter", "Chrome", "Mac", "Summer")
+bob.prefs <- c("Facebook", "Chrome", "PC", "Summer")
+```
+
+Use the `all()` function to determine if the two people have identical preferences. (Your code should ouput a single logical value, either `TRUE` or `FALSE`)
+
+```{r}
+# Insert your code here
+all(alice.prefs == bob.prefs)
+```
+
+Use the `any()` function to determine if the two people have any preferences in common.  (Your code should output a single logical value, either `TRUE` or `FALSE`)
+
+```{r}
+# Insert your code here
+any(alice.prefs == bob.prefs)
+```
+
+
+##### (c) Missing values.
+
+Let `age` be the vector defined below.
+
+```{r}
+age <- c(18, NA, 25, 71, NA, 45, NA, NA, 18)
+```
+
+Write a logical expression that checks whether each entry of `age` is missing (recall missing values are denoted by `NA`).  Your expression should return a logical vector having the same length as `age`.
+
+```{r}
+# Insert your code here
+sapply(age, is.na)
+```
+
+### Problem 3: Referencing vector elements
+
+##### (a)  `which()` practice
+
+Again, `which()` was not formally introduced in our lectures. You can use the `help()` function or `?` help operator to access its documentation page and know its usage. Write code that returns the indices of `age` that are missing.
+
+```{r}
+# Insert your code here
+which(is.na(age))
+```
+
+##### (b) Getting non-missing values
+
+Write code that uses negative indices or the negation operator `!` to return only the values of `age` that are *not* missing. (i.e., your code should result in a vector with elements: 18, 25, 71, 45, 18) 
+
+
+```{r}
+# Insert your code here
+age[which(!is.na(age))]
+```
+
+
+###Problem 4: Data frame basics
+
+We'll use the `Cars93` dataset in the `MASS` package for this problem. It contains cars selected at random from among 1993 passenger car models.
+
+```{r}
+#Remove existing Cars93 to discard previous changes.
+rm(Cars93)
+library(MASS)
+head(Cars93)
+str(Cars93)
+```
+
+Recall that you can use the `$` operator, the `[` notation, and the `[[` notation to select a column from a data frame. Write code to figure out which cars had an ***MPG.city*** of 35 or more.
+
+```{r}
+# Insert your code here
+Cars93[Cars93$MPG.city >= 35, ]
+```
+
+Use the `which.min()` function and `which.max()` function to figure out the respective car ***Model***s that had the *smallest* and *largest* ***MPG.city***. Your code should return the cars' ***Model***s only. Again, use the `help()` function or `?` help operator to learn the usage of the `which.min()` function and `which.max()` function. 
+
+
+```{r}
+# Insert your code here
+Cars93[which.max(Cars93[,'MPG.city']),]
+Cars93[which.min(Cars93[,'MPG.city']),]
+```
+
+
+Use the `table()` function to produce a contingency table of observation counts across `DriveTrain` and `AirBags`.
+
+```{r}
+# Insert your code here
+table(Cars93[,'DriveTrain'], Cars93[,'AirBags'])
+```
+
+Use the `levels()` function to code the values contained in the `DriveTrain` column (which is treated as a factor by R). Code `"Rear"` to `"rear wheel"`, `"Front"` to `"front wheel"`, and `"4WD"` to `"all wheel"`. Assign the result back to the `DriveTrain` column.
+
+```{r}
+# Insert your code here
+
+#levels(Cars93[,'DriveTrain'])[levels(Cars93[,'DriveTrain'])=="4WD"] <- "all wheel"
+#levels(Cars93[,'DriveTrain'])[levels(Cars93[,'DriveTrain'])=="Front"] <- "front wheel"
+#levels(Cars93[,'DriveTrain'])[levels(Cars93[,'DriveTrain'])=="Rear"] <- "rear wheel"
+
+levels(Cars93[,'DriveTrain']) <- c("all wheel", "front wheel", "rear wheel") 
+
+```
+
+Use the `ifelse()` function to code the values contained in the `EngineSize` column. Code values greater than 3 to `"large"`, values smaller than 2 than to `"small"`, and remaining values to `"medium"`. Assign the result back to the `EngineSize` column.
+
+```{r}
+# Insert your code here
+f <- function(x){
+  ifelse(x > 3, "large", ifelse(x < 2, "small", "medium"))
+}
+Cars93$EngineSize <- sapply(Cars93$EngineSize, f)
+str(Cars93$EngineSize)
+```
+
+The following code defines a list of functions to perform certain transformations on the corresponding columns:
+
+```{r}
+trans <- list(
+  Price = function(x) x * 0.9,
+  EngineSize = function(x) factor(x, labels = c("small", "medium", "large"))
+)
+```
+
+Then each function can be accessed by using the `[[` notation in the same way as columns of the `Cars93` data frame can be accessed. Complete the loop body below with a **single line** of code to put them into effect on the corresponding columns of `Cars93`:
+
+```{r}
+for(var in names(trans)) {
+  Cars93[,var] <- trans[[var]](Cars93[,var])
+}
+```
+
+```{r}
+str(Cars93)
+```
+
+### Problem 5: A simple summary function
+
+##### (a)  Checking if a vector is binary.
+
+A binary vector is one whose entries are all either 0 or 1.  E.g., `c(0, 0, 1, 1, 0)` is a binary vector, but `c(1, 2, 1.2, 0, 1, 1)` is not.
+
+Write a function called `isBinary` that accepts a single argument called `x`.  Your function should return `TRUE` if `x` is binary and `FALSE` otherwise. You should test your function on at least the example vectors to check that it works as expected.
+
+
+```{r}
+isBinary <- function(x) {
+  fe <- function(x) {
+    x==1 || x==0
+  }
+  sum(sapply(x, fe) * rep(TRUE, length=length(x))) == length(x)
+}
+isBinary(c(0,0,1,0,0))
+```
+
+
+##### (b) What about missing values?
+
+We might also want to treat vectors like `c(0, NA, 1, NA, 0, 1, NA, 1, 1)` as binary.  i.e., we can redefine a binary vector as one whose values are all either 0, 1, or are missing (`NA`).  
+
+Rewrite your `isBinary` function to now have arguments `(x, allow.NA = FALSE)` that has the following behaviour:
+
+1. If `allow.NA` is `TRUE`, your function should return `TRUE` if the elements of `x` are 0, 1 or `NA`.  It should return `FALSE` otherwise.
+
+2. If `allow.NA` is `FALSE` your function should behave exactly as in (a).  i.e., the function should return `TRUE` if and only if the elements of `x` are 0 or 1.  
+
+```{r}
+# Insert your code here
+
+isBinary <- function(x, allow.NA = FALSE) {
+  if (!allow.NA && any(is.na(x))){
+    return(FALSE)
+  }
+  for (item in x) {
+    if (item != 0 && item != 1 && !any(is.na(item))) {
+      return(FALSE)
+    }
+  }
+  return(TRUE)
+}
+isBinary(c(1, 0, 1, NA), TRUE)
+isBinary(c(1, 0, 1, NA), FALSE)
+isBinary(c(1, 0, 1, 2), FALSE)
+
+```
+
+##### (c) A simple summary function.
+
+Write a function called `calculateBinarySummary` that has a single argument, `x`.  Your function should use your solution to part **(b)** and should have the following behaviour.
+
+1.  If `x` is binary (allowing for `NA`s), your function should return the proportion of values in `x` that are equal to 1, out of the total number of values that are 0 or 1.  (`NA`s should not count toward the denominator in calculating your proportion.)
+For example, when `c(NA, 1, 0, 0, 1)` is received, the function should output `0.5`.
+
+2. If `x` is not binary, your function should print a message (using `print()`) telling the user that this function only summarizes binary variables.
+
+```{r}
+# Insert your code here
+calculateBinarySummary <- function(x) {
+  if (isBinary(x, TRUE)) {
+    return(mean(x, na.rm = TRUE))
+  } else {
+    print("This function only summarizes binary variables.")
+  }
+}
+calculateBinarySummary(c(1,1,1,NA))
+```
+

@@ -1,0 +1,747 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={ISOM3390 Final Project---Text Mining},
+            pdfauthor={Bill Chan},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{ISOM3390 Final Project---Text Mining}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Bill Chan}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{2018/11/28/}
+
+
+\begin{document}
+\maketitle
+
+\subsection{\texorpdfstring{Question 2: \emph{Question
+Description}}{Question 2: Question Description}}\label{question-2-question-description}
+
+\begin{itemize}
+\tightlist
+\item
+  The starting point could be this webpage
+  (\url{https://www.imdb.com/chart/moviemeter}?
+  sort=rk,asc\&mode=simple\&page=1)
+\item
+  Collect user reviews (and ratings) for 100 movies, 100 reviews per
+  movie (with spoilers excluded).
+\item
+  Sample 2500 positive reviews and 2500 negative reviews to form a
+  review corpus.
+\item
+  Use list-based measures to predict sentiments, and evaluate outcomes
+  by contrasting them with actual ratings.
+\item
+  Find 10 most commonly-used positive and negative words in the corpus.
+  For each word, plot its likelihood of occurring in reviews with
+  different ratings.
+\end{itemize}
+
+\paragraph{Step 1: Import necessary
+libraries}\label{step-1-import-necessary-libraries}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(tidyverse)}
+\KeywordTok{library}\NormalTok{(rvest)}
+\KeywordTok{library}\NormalTok{(stringr)}
+\KeywordTok{library}\NormalTok{(RSelenium)}
+\KeywordTok{library}\NormalTok{(tidytext)}
+\KeywordTok{library}\NormalTok{(RTextTools)}
+\KeywordTok{library}\NormalTok{(ggplot2)}
+\end{Highlighting}
+\end{Shaded}
+
+\paragraph{Step 2: Read Most-popular movies listed on IMDB
+Website.}\label{step-2-read-most-popular-movies-listed-on-imdb-website.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{webpage <-}\StringTok{ }\KeywordTok{read_html}\NormalTok{(}\StringTok{"https://www.imdb.com/chart/moviemeter?sort=rk,asc&mode=simple&page=1"}\NormalTok{)}
+\CommentTok{# webpage2 <- read_html("https://www.imdb.com/chart/moviemeter?sort=rk,asc&mode=simple&page=2")}
+\end{Highlighting}
+\end{Shaded}
+
+\paragraph{Step 3: Data Preparation}\label{step-3-data-preparation}
+
+\begin{itemize}
+\tightlist
+\item
+  Prepare the Movie, Rating and Link Dataset.
+\item
+  For some movies, the rating is abscent. A rating of ``0.0'' is
+  replaced for all movie that has no rating posted on IMDB website.
+\item
+  In total \emph{100} movies are listed on the website, but only 80 out
+  of 100 contains an IMBD rating, while the remaining are not released
+  yet until the date of this assignment completion. 1 out of 80 movies
+  do not contain any review, so only 79 movies are recorded for further
+  review scrapping.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{movieInfo <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(webpage) \{}
+\NormalTok{    results <-}\StringTok{ }\NormalTok{webpage }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_nodes}\NormalTok{(}\StringTok{".article"}\NormalTok{)}
+\NormalTok{    names <-}\StringTok{ }\NormalTok{results }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_nodes}\NormalTok{(}\StringTok{".titleColumn"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_nodes}\NormalTok{(}\StringTok{"a"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{        }\KeywordTok{html_text}\NormalTok{(}\DataTypeTok{trim =} \OtherTok{TRUE}\NormalTok{)}
+    
+\NormalTok{    links <-}\StringTok{ }\NormalTok{results }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_nodes}\NormalTok{(}\StringTok{".titleColumn"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_nodes}\NormalTok{(}\StringTok{"a"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{        }\KeywordTok{html_attr}\NormalTok{(}\StringTok{"href"}\NormalTok{)}
+\NormalTok{    links <-}\StringTok{ }\NormalTok{links }\OperatorTok{%>%}\StringTok{ }\KeywordTok{sapply}\NormalTok{(}\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{str_split}\NormalTok{(x, }\StringTok{"/"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{sapply}\NormalTok{(}\ControlFlowTok{function}\NormalTok{(x) }\KeywordTok{paste}\NormalTok{(}\StringTok{"https://www.imdb.com/title/"}\NormalTok{, }
+\NormalTok{        x[}\DecValTok{3}\NormalTok{], }\StringTok{"/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0"}\NormalTok{, }
+        \DataTypeTok{sep =} \StringTok{""}\NormalTok{))}
+    
+\NormalTok{    ratings <-}\StringTok{ }\NormalTok{results }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_nodes}\NormalTok{(}\StringTok{".ratingColumn"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_text}\NormalTok{(}\DataTypeTok{trim =} \OtherTok{TRUE}\NormalTok{)}
+\NormalTok{    ratings <-}\StringTok{ }\KeywordTok{sapply}\NormalTok{(ratings[}\KeywordTok{c}\NormalTok{(}\OtherTok{TRUE}\NormalTok{, }\OtherTok{FALSE}\NormalTok{)], }\ControlFlowTok{function}\NormalTok{(x) \{}
+        \ControlFlowTok{if}\NormalTok{ (x }\OperatorTok{==}\StringTok{ ""}\NormalTok{) }
+            \StringTok{"NA"} \ControlFlowTok{else}\NormalTok{ x}
+\NormalTok{    \})}
+\NormalTok{    newlist <-}\StringTok{ }\KeywordTok{list}\NormalTok{(}\DataTypeTok{names =}\NormalTok{ names, }\DataTypeTok{ratings =}\NormalTok{ ratings, }\DataTypeTok{links =}\NormalTok{ links)}
+\NormalTok{\}}
+
+\NormalTok{page1 <-}\StringTok{ }\KeywordTok{movieInfo}\NormalTok{(webpage)}
+\CommentTok{# page2 <- movieInfo(webpage2)}
+\NormalTok{movies <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{names =}\NormalTok{ page1}\OperatorTok{$}\NormalTok{names, }\DataTypeTok{ratings =}\NormalTok{ page1}\OperatorTok{$}\NormalTok{ratings, }\DataTypeTok{links =}\NormalTok{ page1}\OperatorTok{$}\NormalTok{links)}
+\KeywordTok{row.names}\NormalTok{(movies) <-}\StringTok{ }\OtherTok{NULL}
+\CommentTok{# Mowgli & Mary Queen of Scots have no review at all.}
+\NormalTok{movies <-}\StringTok{ }\NormalTok{movies[movies}\OperatorTok{$}\NormalTok{ratings }\OperatorTok{!=}\StringTok{ "NA"} \OperatorTok{&}\StringTok{ }\NormalTok{movies}\OperatorTok{$}\NormalTok{names }\OperatorTok{!=}\StringTok{ "Mowgli"} \OperatorTok{&}\StringTok{ }\NormalTok{movies}\OperatorTok{$}\NormalTok{names }\OperatorTok{!=}\StringTok{ }
+\StringTok{    "Mary Queen of Scots"}\NormalTok{, ]}
+\NormalTok{movies}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                                           names ratings
+## 2                                       Aquaman     8.4
+## 3                                      Creed II     7.8
+## 5                             Bohemian Rhapsody     8.4
+## 6                                         Venom     6.9
+## 7   Fantastic Beasts: The Crimes of Grindelwald     6.9
+## 8                                Mortal Engines     6.7
+## 9                     Ralph Breaks the Internet     7.5
+## 11            Spider-Man: Into the Spider-Verse     8.7
+## 12                                   Robin Hood     5.4
+## 13                 The Ballad of Buster Scruggs     7.4
+## 14                                   The Grinch     6.4
+## 16                     The Christmas Chronicles     7.3
+## 17                                       Widows     7.4
+## 18                               A Star Is Born     8.2
+## 19                                The Favourite     8.3
+## 20                                 The Predator     5.5
+## 21                                          2.0     7.4
+## 23                Mission: Impossible - Fallout     7.9
+## 24                       Avengers: Infinity War     8.5
+## 25                                    Smallfoot     6.7
+## 26                         The Greatest Showman     7.7
+## 27               The Possession of Hannah Grace     5.1
+## 28        National Lampoon's Christmas Vacation     7.6
+## 30                                    Halloween     7.0
+## 31               How the Grinch Stole Christmas     6.1
+## 33                            Crazy Rich Asians     7.1
+## 35                                Love Actually     7.6
+## 36                                   Green Book     8.3
+## 37                        Under the Silver Lake     6.6
+## 38                                     Dumplin'     7.0
+## 39                                      Vox Lux     6.2
+## 40                                          Elf     6.9
+## 41          The House with a Clock in Its Walls     6.1
+## 42                               Instant Family     7.6
+## 43                                      The Nun     5.5
+## 44                                  Outlaw King     7.0
+## 45                                Incredibles 2     7.9
+## 46                                         Roma     8.7
+## 47                                   Peppermint     6.5
+## 48                                      The Meg     5.8
+## 49                           The Little Mermaid     4.3
+## 52                                   Home Alone     7.5
+## 54                               BlacKkKlansman     7.6
+## 56                                     Overlord     7.1
+## 57                                   Deadpool 2     7.8
+## 58                                    Searching     7.8
+## 59                                      Mile 22     6.1
+## 60        A Christmas Prince: The Royal Wedding     5.1
+## 61                            A Christmas Story     8.0
+## 62                        The Happytime Murders     5.3
+## 63                                    First Man     7.6
+## 64                                Black Panther     7.4
+## 65                           A Christmas Prince     5.7
+## 66                                      Colette     6.8
+## 67                                     Suspiria     7.3
+## 68      Fantastic Beasts and Where to Find Them     7.3
+## 69                    The House That Jack Built     7.4
+## 70                              The Equalizer 2     6.8
+## 71                                      Rampage     6.1
+## 72                         Ant-Man and the Wasp     7.2
+## 73                               A Simple Favor     7.1
+## 75           The Nutcracker and the Four Realms     5.6
+## 77                                   Hereditary     7.3
+## 78                 The Girl in the Spider's Web     6.1
+## 79                   If Beale Street Could Talk     7.0
+## 80                                  Ben Is Back     6.7
+## 81                                        Creed     7.6
+## 82                                A Quiet Place     7.6
+## 86                                  Life Itself     5.9
+## 87                            The Polar Express     6.6
+## 88        Harry Potter and the Sorcerer's Stone     7.6
+## 89                             The Santa Clause     6.4
+## 90                          The Princess Switch     6.0
+## 91                      Solo: A Star Wars Story     7.0
+## 94                                     Die Hard     8.2
+## 95                                        Alpha     6.8
+## 96                                      Tumbbad     8.6
+## 97                        It's a Wonderful Life     8.6
+## 98                                   Boy Erased     7.2
+## 100                            Schindler's List     8.9
+##                                                                                                       links
+## 2   https://www.imdb.com/title/tt1477834/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 3   https://www.imdb.com/title/tt6343314/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 5   https://www.imdb.com/title/tt1727824/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 6   https://www.imdb.com/title/tt1270797/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 7   https://www.imdb.com/title/tt4123430/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 8   https://www.imdb.com/title/tt1571234/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 9   https://www.imdb.com/title/tt5848272/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 11  https://www.imdb.com/title/tt4633694/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 12  https://www.imdb.com/title/tt4532826/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 13  https://www.imdb.com/title/tt6412452/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 14  https://www.imdb.com/title/tt2709692/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 16  https://www.imdb.com/title/tt2990140/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 17  https://www.imdb.com/title/tt4218572/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 18  https://www.imdb.com/title/tt1517451/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 19  https://www.imdb.com/title/tt5083738/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 20  https://www.imdb.com/title/tt3829266/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 21  https://www.imdb.com/title/tt5080556/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 23  https://www.imdb.com/title/tt4912910/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 24  https://www.imdb.com/title/tt4154756/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 25  https://www.imdb.com/title/tt6182908/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 26  https://www.imdb.com/title/tt1485796/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 27  https://www.imdb.com/title/tt5734576/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 28  https://www.imdb.com/title/tt0097958/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 30  https://www.imdb.com/title/tt1502407/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 31  https://www.imdb.com/title/tt0170016/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 33  https://www.imdb.com/title/tt3104988/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 35  https://www.imdb.com/title/tt0314331/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 36  https://www.imdb.com/title/tt6966692/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 37  https://www.imdb.com/title/tt5691670/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 38  https://www.imdb.com/title/tt4878482/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 39  https://www.imdb.com/title/tt5960374/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 40  https://www.imdb.com/title/tt0319343/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 41  https://www.imdb.com/title/tt2119543/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 42  https://www.imdb.com/title/tt7401588/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 43  https://www.imdb.com/title/tt5814060/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 44  https://www.imdb.com/title/tt6679794/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 45  https://www.imdb.com/title/tt3606756/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 46  https://www.imdb.com/title/tt6155172/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 47  https://www.imdb.com/title/tt6850820/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 48  https://www.imdb.com/title/tt4779682/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 49  https://www.imdb.com/title/tt5493944/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 52  https://www.imdb.com/title/tt0099785/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 54  https://www.imdb.com/title/tt7349662/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 56  https://www.imdb.com/title/tt4530422/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 57  https://www.imdb.com/title/tt5463162/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 58  https://www.imdb.com/title/tt7668870/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 59  https://www.imdb.com/title/tt4560436/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 60  https://www.imdb.com/title/tt8709036/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 61  https://www.imdb.com/title/tt0085334/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 62  https://www.imdb.com/title/tt1308728/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 63  https://www.imdb.com/title/tt1213641/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 64  https://www.imdb.com/title/tt1825683/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 65  https://www.imdb.com/title/tt7608418/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 66  https://www.imdb.com/title/tt5437928/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 67  https://www.imdb.com/title/tt1034415/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 68  https://www.imdb.com/title/tt3183660/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 69  https://www.imdb.com/title/tt4003440/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 70  https://www.imdb.com/title/tt3766354/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 71  https://www.imdb.com/title/tt2231461/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 72  https://www.imdb.com/title/tt5095030/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 73  https://www.imdb.com/title/tt7040874/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 75  https://www.imdb.com/title/tt5523010/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 77  https://www.imdb.com/title/tt7784604/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 78  https://www.imdb.com/title/tt5177088/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 79  https://www.imdb.com/title/tt7125860/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 80  https://www.imdb.com/title/tt7545524/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 81  https://www.imdb.com/title/tt3076658/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 82  https://www.imdb.com/title/tt6644200/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 86  https://www.imdb.com/title/tt5989218/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 87  https://www.imdb.com/title/tt0338348/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 88  https://www.imdb.com/title/tt0241527/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 89  https://www.imdb.com/title/tt0111070/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 90  https://www.imdb.com/title/tt8954732/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 91  https://www.imdb.com/title/tt3778644/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 94  https://www.imdb.com/title/tt0095016/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 95  https://www.imdb.com/title/tt4244998/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 96  https://www.imdb.com/title/tt8239946/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 97  https://www.imdb.com/title/tt0038650/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 98  https://www.imdb.com/title/tt7008872/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+## 100 https://www.imdb.com/title/tt0108052/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  This function will get the \emph{Review Content} and \emph{Review
+  Rating} for every movie based on its link. It is observed that some
+  review does not have any rating, which a rating of 0 will be replaced
+  for these reviews.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{getReviewDetail <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(page_source) \{}
+\NormalTok{  review_content <-}\StringTok{ }\NormalTok{page_source }\OperatorTok{%>%}\StringTok{ }\KeywordTok{read_html}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_nodes}\NormalTok{(}\StringTok{".article"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_nodes}\NormalTok{(}\StringTok{".text"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_text}\NormalTok{(}\DataTypeTok{trim =} \OtherTok{TRUE}\NormalTok{)}
+\NormalTok{  review_rating <-}\StringTok{ }\NormalTok{page_source }\OperatorTok{%>%}\StringTok{ }\KeywordTok{read_html}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_nodes}\NormalTok{(}\StringTok{".lister-item-content"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_node}\NormalTok{(}\StringTok{".ipl-ratings-bar"}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{html_text}\NormalTok{(}\DataTypeTok{trim =} \OtherTok{TRUE}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{sapply}\NormalTok{(}\ControlFlowTok{function}\NormalTok{(x) }\ControlFlowTok{if}\NormalTok{ (}\KeywordTok{is.na}\NormalTok{(x)) }\DecValTok{0} \ControlFlowTok{else} \KeywordTok{as.integer}\NormalTok{(}\KeywordTok{str_split}\NormalTok{(x, }\StringTok{"/"}\NormalTok{, }\DataTypeTok{n =} \DecValTok{2}\NormalTok{)[[}\DecValTok{1}\NormalTok{]][}\DecValTok{1}\NormalTok{])) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{unname}\NormalTok{(review_rating)}
+  \KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{rating =}\NormalTok{ review_rating, }\DataTypeTok{content =}\NormalTok{ review_content)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{itemize}
+\tightlist
+\item
+  The following script will iterate all links extracted previously, then
+  use selenium to scrap corresponding reivew content and ratings for
+  each movie. The result will be stored into a .csv file for further
+  process.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{movieSummary <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{rating =} \KeywordTok{c}\NormalTok{(), }\DataTypeTok{content =} \KeywordTok{c}\NormalTok{(), }\DataTypeTok{name =} \KeywordTok{c}\NormalTok{())}
+\NormalTok{remDr <-}\StringTok{ }\KeywordTok{remoteDriver}\NormalTok{(}\DataTypeTok{remoteServerAddr =} \StringTok{"localhost"}\NormalTok{, }\DataTypeTok{port =}\NormalTok{ 4445L, }\DataTypeTok{browserName =} \StringTok{"chrome"}\NormalTok{)}
+\NormalTok{remDr}\OperatorTok{$}\KeywordTok{open}\NormalTok{(}\DataTypeTok{silent =} \OtherTok{TRUE}\NormalTok{)}
+\KeywordTok{apply}\NormalTok{(movies, }\DecValTok{1}\NormalTok{, }\ControlFlowTok{function}\NormalTok{(movie) \{}
+\NormalTok{  remDr}\OperatorTok{$}\KeywordTok{navigate}\NormalTok{(}\KeywordTok{as.character}\NormalTok{(movie[}\DecValTok{3}\NormalTok{]))}
+  \ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \KeywordTok{c}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\DecValTok{6}\NormalTok{)) \{}
+\NormalTok{    possibleError <-}\StringTok{ }\KeywordTok{tryCatch}\NormalTok{(\{}
+\NormalTok{      loadmore <-remDr}\OperatorTok{$}\KeywordTok{findElement}\NormalTok{(}\DataTypeTok{using =} \StringTok{"id"}\NormalTok{, }\DataTypeTok{value =} \StringTok{"load-more-trigger"}\NormalTok{)}
+\NormalTok{      loadmore}\OperatorTok{$}\KeywordTok{clickElement}\NormalTok{()}
+\NormalTok{    \}, }\DataTypeTok{error =} \ControlFlowTok{function}\NormalTok{(e) \{}
+\NormalTok{        e}
+\NormalTok{    \})}
+    \ControlFlowTok{if}\NormalTok{(}\KeywordTok{inherits}\NormalTok{(possibleError, }\StringTok{"error"}\NormalTok{)) }\ControlFlowTok{break}
+    \KeywordTok{Sys.sleep}\NormalTok{(}\DecValTok{3}\NormalTok{)}
+\NormalTok{  \}}
+\NormalTok{  page_source <-}\StringTok{ }\NormalTok{remDr}\OperatorTok{$}\KeywordTok{getPageSource}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\NormalTok{.[[}\DecValTok{1}\NormalTok{]]}
+\NormalTok{  movieSummary <<-}\StringTok{ }\KeywordTok{getReviewDetail}\NormalTok{(page_source) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{cbind}\NormalTok{(}\DataTypeTok{name=}\KeywordTok{as.character}\NormalTok{(movie[}\DecValTok{1}\NormalTok{])) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{rbind}\NormalTok{(movieSummary)}
+\NormalTok{\})}
+\KeywordTok{write.csv}\NormalTok{(movieSummary,}\StringTok{'movieSummary.csv'}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\paragraph{Step 4: Extract positive reviews and negative
+reviews}\label{step-4-extract-positive-reviews-and-negative-reviews}
+
+\begin{itemize}
+\tightlist
+\item
+  Select the top 10 or 37 reviews for each movie to form 2500 Positive
+  \& Negative review samples.
+\item
+  Consider reviews that have rating greater or equal to 6 as a positive
+  review, while reviews that have rating less than 6 as a negative
+  review.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{movieSummary <-}\StringTok{ }\KeywordTok{read_csv}\NormalTok{(}\StringTok{'movieSummary.csv'}\NormalTok{)}
+\KeywordTok{names}\NormalTok{(movieSummary) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"RowIndex"}\NormalTok{, }\StringTok{"rating"}\NormalTok{, }\StringTok{"content"}\NormalTok{, }\StringTok{"name"}\NormalTok{)}
+\NormalTok{movieSummary <-}\StringTok{ }\NormalTok{movieSummary[movieSummary}\OperatorTok{$}\NormalTok{rating }\OperatorTok{!=}\StringTok{ '0'}\NormalTok{,]}
+\NormalTok{movieSummary <-}\StringTok{ }\NormalTok{movieSummary[}\KeywordTok{sample}\NormalTok{(}\KeywordTok{nrow}\NormalTok{(movieSummary)),] }\OperatorTok{%>%}\StringTok{ }\KeywordTok{select}\NormalTok{(name, content, rating)}
+\NormalTok{positiveReview <-}\StringTok{ }\NormalTok{movieSummary[movieSummary}\OperatorTok{$}\NormalTok{rating }\OperatorTok{>=}\StringTok{ }\DecValTok{6}\NormalTok{,] }\OperatorTok{%>%}\StringTok{ }\KeywordTok{head}\NormalTok{(}\DecValTok{2500}\NormalTok{)}
+\NormalTok{negativeReview <-}\StringTok{ }\NormalTok{movieSummary[movieSummary}\OperatorTok{$}\NormalTok{rating }\OperatorTok{<}\StringTok{ }\DecValTok{6}\NormalTok{,] }\OperatorTok{%>%}\StringTok{ }\KeywordTok{head}\NormalTok{(}\DecValTok{2500}\NormalTok{)}
+\NormalTok{movieSummary <-}\StringTok{ }\KeywordTok{rbind}\NormalTok{(positiveReview, negativeReview)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{positiveReview}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 2,500 x 3
+##    name                     content                                 rating
+##    <chr>                    <chr>                                    <dbl>
+##  1 Outlaw King              .. into the medieval history and life ~      6
+##  2 Fantastic Beasts: The C~ The Crimes Of Grindelwald is a great m~      9
+##  3 A Quiet Place            "Yes, I am biased for rating A Quiet P~     10
+##  4 Hereditary               "Pros= subtle storytelling. \r\n \r\n ~     10
+##  5 Robin Hood               There are a lot of OMG it's not the or~     10
+##  6 How the Grinch Stole Ch~ "Released in early 2000, Ron Howard's ~      7
+##  7 Wreck-It Ralph           One of my most favourite films in this~     10
+##  8 A Star Is Born           "There are some directorial debuts tha~      9
+##  9 2.0                      S.Shankar mighty vision and right usag~     10
+## 10 Elf                      I love this movie Will Ferrell is unbe~      8
+## # ... with 2,490 more rows
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{negativeReview}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 2,500 x 3
+##    name                   content                                   rating
+##    <chr>                  <chr>                                      <dbl>
+##  1 The Meg                "The 'vote bots' have been out in full f~      3
+##  2 Elf                    "Seriously. Will Ferrell comes across as~      1
+##  3 The Grinch             Firstly, I can't help but feel this is a~      3
+##  4 How the Grinch Stole ~ There... I dissed a Ron Howard movie. Us~      1
+##  5 BlacKkKlansman         Who is the most racist director in Holly~      1
+##  6 Ant-Man and the Wasp   So bad, you'd be forgiven for thinking t~      2
+##  7 Elf                    i heard great things about this film, an~      4
+##  8 The House with a Cloc~ Fancy sets ruined by ponderous writing a~      1
+##  9 Wreck-It Ralph         All the creativity and characters you wa~      3
+## 10 Incredibles 2          I have been a Disney/Pixar fan since Toy~      4
+## # ... with 2,490 more rows
+\end{verbatim}
+
+\paragraph{Step 5: Sentiment Analysis}\label{step-5-sentiment-analysis}
+
+\begin{itemize}
+\tightlist
+\item
+  Calculate the sentiment for every review of every movie. The actual
+  rating is listed on the rightmost column for comparison.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{movieSentiment <-}\StringTok{ }\NormalTok{movieSummary }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(name) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{reviewNum =} \KeywordTok{row_number}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ungroup}\NormalTok{() }
+
+\NormalTok{movieListBasedMeasure <-}\StringTok{ }\NormalTok{movieSentiment }\OperatorTok{%>%}\StringTok{ }\KeywordTok{unnest_tokens}\NormalTok{(word, content) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(}\OperatorTok{!}\KeywordTok{str_detect}\NormalTok{(word, }\StringTok{"^[0-9]*$"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{anti_join}\NormalTok{(stop_words) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(}\KeywordTok{get_sentiments}\NormalTok{(}\StringTok{"bing"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{count}\NormalTok{(name, }\DataTypeTok{index =}\NormalTok{ reviewNum, sentiment) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{spread}\NormalTok{(sentiment, n, }\DataTypeTok{fill =} \DecValTok{0}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{sentiment =}\NormalTok{ positive }\OperatorTok{-}\StringTok{ }\NormalTok{negative) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(movieSentiment, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"name"}\NormalTok{ =}\StringTok{ "name"}\NormalTok{, }\StringTok{"index"}\NormalTok{ =}\StringTok{ "reviewNum"}\NormalTok{))}
+\KeywordTok{names}\NormalTok{(movieListBasedMeasure) <-}\StringTok{ }\KeywordTok{c}\NormalTok{(}\StringTok{"MovieName"}\NormalTok{, }\StringTok{"ReviewNum"}\NormalTok{, }\StringTok{"Negative"}\NormalTok{, }\StringTok{"Positive"}\NormalTok{, }\StringTok{"Sentiment"}\NormalTok{, }\StringTok{"Content"}\NormalTok{, }\StringTok{"ActualRating"}\NormalTok{)}
+\NormalTok{movieListBasedMeasure <-}\StringTok{ }\NormalTok{movieListBasedMeasure[, }\KeywordTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{,}\DecValTok{3}\NormalTok{,}\DecValTok{4}\NormalTok{,}\DecValTok{5}\NormalTok{,}\DecValTok{7}\NormalTok{)]}
+\NormalTok{movieListBasedMeasure}\OperatorTok{$}\NormalTok{Prediction <-}\StringTok{ }\NormalTok{((movieListBasedMeasure}\OperatorTok{$}\NormalTok{Sentiment }\OperatorTok{<}\StringTok{ }\DecValTok{0} \OperatorTok{&}\StringTok{ }\NormalTok{movieListBasedMeasure}\OperatorTok{$}\NormalTok{ActualRating }\OperatorTok{<}\StringTok{ }\DecValTok{5}\NormalTok{) }\OperatorTok{|}\StringTok{ }\NormalTok{movieListBasedMeasure}\OperatorTok{$}\NormalTok{Sentiment }\OperatorTok{>=}\StringTok{ }\DecValTok{0} \OperatorTok{&}\StringTok{ }\NormalTok{movieListBasedMeasure}\OperatorTok{$}\NormalTok{ActualRating }\OperatorTok{>=}\StringTok{ }\DecValTok{5}\NormalTok{)}
+\NormalTok{movieListBasedMeasure}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 4,839 x 7
+##    MovieName ReviewNum Negative Positive Sentiment ActualRating Prediction
+##    <chr>         <int>    <dbl>    <dbl>     <dbl>        <dbl> <lgl>     
+##  1 2.0               1        2        1        -1           10 FALSE     
+##  2 2.0               2        1        1         0           10 TRUE      
+##  3 2.0               3        0        2         2           10 TRUE      
+##  4 2.0               4        0        4         4            7 TRUE      
+##  5 2.0               6        0        1         1           10 TRUE      
+##  6 2.0               7        1        7         6           10 TRUE      
+##  7 2.0               8        3        8         5            6 TRUE      
+##  8 2.0               9        0        2         2           10 TRUE      
+##  9 2.0              11        2        2         0            6 TRUE      
+## 10 2.0              12        3        6         3           10 TRUE      
+## # ... with 4,829 more rows
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  There are in total 7652 reviews are predicted correctly using
+  sentiment analysis, while 2959 reviews are predicted incorrectly. In
+  this stage, I decided to use the entire extracted reviews (With 10950
+  reviews in total) instead of the formed 5000 samples, to get a better
+  overview on the accuracy of sentiment analysis over the data.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{movieListBasedMeasure }\OperatorTok{%>%}\StringTok{ }\KeywordTok{count}\NormalTok{(Prediction)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 2 x 2
+##   Prediction     n
+##   <lgl>      <int>
+## 1 FALSE       1372
+## 2 TRUE        3467
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  Extract words with most occurance in both positive and negative
+  reviews.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{wordCount <-}\StringTok{ }\NormalTok{movieSentiment }\OperatorTok{%>%}\StringTok{ }\KeywordTok{unnest_tokens}\NormalTok{(word, content) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{filter}\NormalTok{(}\OperatorTok{!}\KeywordTok{str_detect}\NormalTok{(word, }\StringTok{"^[0-9]*$"}\NormalTok{)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{anti_join}\NormalTok{(stop_words) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{inner_join}\NormalTok{(}\KeywordTok{get_sentiments}\NormalTok{(}\StringTok{"bing"}\NormalTok{))}
+\NormalTok{positiveWords <-}\StringTok{ }\NormalTok{wordCount[wordCount}\OperatorTok{$}\NormalTok{sentiment}\OperatorTok{==}\StringTok{"positive"}\NormalTok{,] }\OperatorTok{%>%}\StringTok{ }\KeywordTok{count}\NormalTok{(word, }\DataTypeTok{sort =} \OtherTok{TRUE}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{head}\NormalTok{(}\DecValTok{10}\NormalTok{)}
+\NormalTok{negativeWords <-}\StringTok{ }\NormalTok{wordCount[wordCount}\OperatorTok{$}\NormalTok{sentiment}\OperatorTok{==}\StringTok{"negative"}\NormalTok{,] }\OperatorTok{%>%}\StringTok{ }\KeywordTok{count}\NormalTok{(word, }\DataTypeTok{sort =} \OtherTok{TRUE}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{head}\NormalTok{(}\DecValTok{10}\NormalTok{)}
+\NormalTok{wordCount}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 50,992 x 5
+##    name                                rating reviewNum word     sentiment
+##    <chr>                                <dbl>     <int> <chr>    <chr>    
+##  1 Outlaw King                              6         1 drag     negative 
+##  2 Outlaw King                              6         1 bloody   negative 
+##  3 Outlaw King                              6         1 kill     negative 
+##  4 Fantastic Beasts: The Crimes of Gr~      9         1 plot     negative 
+##  5 Fantastic Beasts: The Crimes of Gr~      9         1 plot     negative 
+##  6 Fantastic Beasts: The Crimes of Gr~      9         1 pleasan~ positive 
+##  7 Fantastic Beasts: The Crimes of Gr~      9         1 refresh~ positive 
+##  8 Fantastic Beasts: The Crimes of Gr~      9         1 plot     negative 
+##  9 A Quiet Place                           10         1 biased   negative 
+## 10 A Quiet Place                           10         1 quiet    positive 
+## # ... with 50,982 more rows
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{positiveWords}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 10 x 2
+##    word        n
+##    <chr>   <int>
+##  1 love     1064
+##  2 fun       571
+##  3 loved     455
+##  4 amazing   420
+##  5 pretty    415
+##  6 perfect   336
+##  7 enjoy     330
+##  8 worth     319
+##  9 marvel    310
+## 10 classic   300
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{negativeWords}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 10 x 2
+##    word         n
+##    <chr>    <int>
+##  1 bad       1160
+##  2 plot      1030
+##  3 funny      536
+##  4 rocky      516
+##  5 boring     472
+##  6 hard       361
+##  7 worst      318
+##  8 waste      283
+##  9 terrible   269
+## 10 dark       258
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  Plot the corresponding chart with its possibility to occur in
+  different ratings.
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{positiveChart <-}\StringTok{ }\NormalTok{positiveWords }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(wordCount, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"word"}\NormalTok{ =}\StringTok{ "word"}\NormalTok{))}
+\NormalTok{positiveChart <-}\StringTok{ }\NormalTok{positiveChart[, }\KeywordTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{4}\NormalTok{)] }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(word, rating) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{number =} \KeywordTok{n}\NormalTok{())}
+\NormalTok{positiveChart}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 100 x 3
+## # Groups:   word [?]
+##    word    rating number
+##    <chr>    <dbl>  <int>
+##  1 amazing      1     19
+##  2 amazing      2     18
+##  3 amazing      3      6
+##  4 amazing      4     19
+##  5 amazing      5     19
+##  6 amazing      6      6
+##  7 amazing      7     18
+##  8 amazing      8     61
+##  9 amazing      9     70
+## 10 amazing     10    184
+## # ... with 90 more rows
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{positiveChart }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(word) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{percent =}\NormalTok{ number}\OperatorTok{/}\KeywordTok{sum}\NormalTok{(number)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{rating, }\DataTypeTok{y=}\NormalTok{percent, }\DataTypeTok{group=}\NormalTok{word, }\DataTypeTok{fill =}\NormalTok{ word)) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{color=}\NormalTok{word)) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{color=}\NormalTok{word)) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \StringTok{"Rating"}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Pr(C|W)"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_x_continuous}\NormalTok{(}\DataTypeTok{breaks =}\NormalTok{ positiveChart}\OperatorTok{$}\NormalTok{rating, }\DataTypeTok{labels =}\NormalTok{ positiveChart}\OperatorTok{$}\NormalTok{rating, }\DataTypeTok{expand =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{facet_wrap}\NormalTok{(}\OperatorTok{~}\StringTok{ }\NormalTok{word, }\DataTypeTok{scales =} \StringTok{"free"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme_minimal}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{legend.position=}\StringTok{"none"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{ISOM3390_Project_files/figure-latex/unnamed-chunk-14-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{negativeChart <-}\StringTok{ }\NormalTok{negativeWords }\OperatorTok{%>%}\StringTok{ }\KeywordTok{left_join}\NormalTok{(wordCount, }\DataTypeTok{by =} \KeywordTok{c}\NormalTok{(}\StringTok{"word"}\NormalTok{ =}\StringTok{ "word"}\NormalTok{))}
+\NormalTok{negativeChart <-}\StringTok{ }\NormalTok{negativeChart[, }\KeywordTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{4}\NormalTok{)] }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(word, rating) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{number =} \KeywordTok{n}\NormalTok{())}
+\NormalTok{negativeChart}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 100 x 3
+## # Groups:   word [?]
+##    word  rating number
+##    <chr>  <dbl>  <int>
+##  1 bad        1    434
+##  2 bad        2    124
+##  3 bad        3    100
+##  4 bad        4     70
+##  5 bad        5     89
+##  6 bad        6     59
+##  7 bad        7     51
+##  8 bad        8     73
+##  9 bad        9     47
+## 10 bad       10    113
+## # ... with 90 more rows
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{negativeChart }\OperatorTok{%>%}\StringTok{ }\KeywordTok{group_by}\NormalTok{(word) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{percent =}\NormalTok{ number}\OperatorTok{/}\KeywordTok{sum}\NormalTok{(number)) }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ungroup}\NormalTok{() }\OperatorTok{%>%}\StringTok{ }\KeywordTok{ggplot}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{x=}\NormalTok{rating, }\DataTypeTok{y=}\NormalTok{percent, }\DataTypeTok{group=}\NormalTok{word, }\DataTypeTok{fill =}\NormalTok{ word)) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{geom_line}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{color=}\NormalTok{word)) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{geom_point}\NormalTok{(}\KeywordTok{aes}\NormalTok{(}\DataTypeTok{color=}\NormalTok{word)) }\OperatorTok{+}\StringTok{ }
+\StringTok{  }\KeywordTok{labs}\NormalTok{(}\DataTypeTok{x =} \StringTok{"Rating"}\NormalTok{, }\DataTypeTok{y =} \StringTok{"Pr(C|W)"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{scale_x_continuous}\NormalTok{(}\DataTypeTok{breaks =}\NormalTok{ negativeChart}\OperatorTok{$}\NormalTok{rating, }\DataTypeTok{labels =}\NormalTok{ negativeChart}\OperatorTok{$}\NormalTok{rating, }\DataTypeTok{expand =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{0}\NormalTok{)) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{facet_wrap}\NormalTok{(}\OperatorTok{~}\StringTok{ }\NormalTok{word, }\DataTypeTok{scales =} \StringTok{"free"}\NormalTok{) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme_minimal}\NormalTok{() }\OperatorTok{+}
+\StringTok{  }\KeywordTok{theme}\NormalTok{(}\DataTypeTok{legend.position=}\StringTok{"none"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{ISOM3390_Project_files/figure-latex/unnamed-chunk-15-1.pdf}
+
+
+\end{document}

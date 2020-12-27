@@ -1,0 +1,140 @@
+---
+title: "Lab 8: Wrangling and Visualizing Hong Kong's Weather Data"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+
+Before proceeding to the formal exercise, make sure the `tidyverse` is installed in your lab computer.
+
+```{r}
+library(tidyverse)
+```
+
+In today's lab, we are going to use the tools provided by `ggplot2` to create a graphic similar to the following one to visualizes Hong Kong's daily temperatures in 2017.
+
+![](weather_plot.png)
+
+The data used is obtained from the University of Dayton's [Average Daily Temperature archive website](http://academic.udayton.edu/kissock/http/Weather/) which contains daily average temperatures for 157 U.S. and 167 international cities with time spanning from January 1, 1995 to present. 
+
+Load the data to create a tibble named `weather` using `read_table()` from the `readr` package:
+
+```{r cache=T}
+weather <- read_table("http://academic.udayton.edu/kissock/http/Weather/gsod95-current/HKHONGKG.txt", col_names = c("month", "day", "year", "temp"))
+
+```
+
+The raw data represents month, day, year, and average daily temperature ($^\circ F$) and looks like:
+ 
+```{r}
+head(weather)
+
+```
+
+Investigating the graphic above, we can find it is approximately composed of 4 layers of geometric objects. They are:
+
+- A black solid curve representing the daily temperatures in the focal year (2014). 
+- A wheat coloured band that represents the record high and low temperatures in the years prior to the focal year (i.e., 1995-2013).
+- A narrower brown coloured band composed of lines, each representing the 95% confidence interval for the mean of the temperature on a day.
+- Two series of points that identify the days in which the focal year (2014) had the record high and low temperature.
+
+Some quantities are summary statistics of the raw data. Certain statistical transformations are thereby needed to derive these values.
+
+Let's wrangle our data to create a graphic of this kind.
+
+**Step 1**: use proper verbs in `dplyr` to create a new variable named `day_index` that labels observations from 1 to 366 and pairs temperatures from the same day in different years. This variable will later be used as the x axis.
+
+***Hint: keep only observations from 1995-2017, use by-group `arrange` to sort observations in ascending order for every year, and use `row_number()` to generate the indices. Remeber to assign the augmented tibble back to `weather`***
+
+```{r} 
+## Edit Here
+
+weather <- group_by(weather, year) %>% arrange(year, month, day) %>% mutate(day_index=row_number())
+
+
+```
+
+
+**Step 2**: Summarizing our data reveals some bizarre value for `temp`. 
+
+```{r}
+summary(weather)
+```
+
+The "-99" flag denotes the missing data, which should be approximated as the mean of the daily temperatures recorded immediately before and after the missing data. The following code performs such an imputation proceduere. 
+
+```{r}
+weather <- weather %>%
+  mutate(temp = if_else(temp == -99, as.double(NA), temp)) %>% 
+  mutate(before2=lag(temp, 2), before1=lag(temp), after1=lead(temp), after2=lead(temp, 2)) %>% 
+  rowwise() %>% 
+  mutate(temp = if_else(is.na(temp), mean(c(before2, before1, after1, after2), na.rm = TRUE), temp)) %>%
+  select(1:5)
+```
+
+**Step 3**: Partition observations in `weather` into two tibbles. One named `weather_past` contains observations from 1995-2016, while the other named `weather_2017` contains only the data from 2017.   
+  
+```{r}
+## Edit Here
+summary(weather)
+
+weather_past <- weather[weather$year!='2017',]
+weather_2017 <- weather[weather$year=='2017',]
+
+```
+
+**Step 4**: use `weather_past` to construct a summary table named `weather_sum` containing historical highest and lowest temperatures (variable `temp_max` and `temp_min`) as well as the standard error (`temp_se = sd(temp)/sqrt(length(temp)-1)`) and average (variable `temp_avg`) of temperatures for each day. 
+
+```{r}
+## Edit Here
+
+weather_sum <- weather_past %>% group_by(day_index) %>% summarise(temp_max = max(temp), temp_min = min(temp), temp_se = sd(temp)/sqrt(length(temp)-1), temp_avg = mean(temp)) 
+
+weather_sum
+
+```
+
+
+**Step 5**: join `weather_2017` and `weather_sum`, and create a variable named `emphasis` to denote whether a daily temperature is even higher (or lower) than the historical highest (or lowest) temperature on that day. Remove all temperatures that do not breach the historical high or low.
+
+```{r}
+
+weather_emphasis <- weather_2017 %>% inner_join(weather_sum, by = "day_index" ) %>% 
+  group_by(day_index) %>% 
+  mutate(emphasis = case_when(temp <= temp_min ~ "low", temp >= temp_max ~ "high")) %>% 
+  filter(!is.na(emphasis))
+
+weather_emphasis
+
+```
+
+**Step 6**: The following code renders the plot by calling `ggplot()` to create a blank canvas and adding on more and more graphical layers. Replace all `****`s in the code with proper function suffixes, argument values, or variable names to make it work.
+
+ 
+
+```{r fig.width=9, fig.height=4, eval=TRUE}
+
+weather_sum %>% ggplot(aes(day_index)) +
+  geom_linerange(aes(ymax = weather_sum$temp_max, ymin = weather_sum$temp_min), colour = "wheat2") + 
+  geom_linerange(aes(ymax = temp_avg + 2.101 * temp_se, ymin =  temp_avg - 2.101 * temp_se), colour = "wheat4") + 
+ geom_point(weather_emphasis, mapping = aes(x=day_index,y=temp, color=emphasis)) + 
+ geom_line(weather_2017, mapping = aes(x=day_index,y=temp)) +
+ scale_colour_manual(values = c("high" = "firebrick3", "low" = "blue3")) +
+  theme(plot.background = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.grid.major = element_blank(),
+              panel.border = element_blank(),
+              panel.background = element_blank(),
+              axis.ticks = element_blank(),
+              axis.title = element_blank(),
+              legend.position = "none")
+
+```
+ 
+
+

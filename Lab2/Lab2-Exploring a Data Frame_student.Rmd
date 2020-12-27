@@ -1,0 +1,144 @@
+---
+title: "Exploring a Data Frame"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy=TRUE)
+```
+
+
+## Introduction
+
+Data frames are the most common structure of storing data in R. Today's lab highlights some common functions in R we would like to use to explore a data frame before conducting any profound data analysis.
+
+## Loading the Data
+
+
+The dataset we are going to explore contains customer default records for a credit card company.
+
+We begin by loading the data from a .csv file (csv is short for comma-separated values) using the `read.table()` function. This function reads a file in table format and creates a **data frame** from it, with cases corresponding to lines and variables to fields in the file. 
+
+```{r load-data, message=FALSE, tidy=TRUE}
+getwd()
+setwd("C:/Users/Billp/OneDrive/HKUST/ISOM 3390/Lab2")
+default_data<-read.table("Default.csv", header = TRUE, sep = ",")
+```
+
+The first argument supplied to `read.table()` is the pathname to the .csv file. It can be a path relative to the current **working directory** (we can use the `getwd()` command to find the current working directory),  which is, by default, the directory where this R Markdown file locates. If the directory containing the R markdown file doesn't contain the data file, we have to type the whole pathname (the **absolute path**).
+
+The `header` argument is used to specify whether the file contains the names of the variables as its first line. If the data has names for each of the columns on the top row, set `header = TRUE`. The `sep` argument is used to specify the field separator character. The default one is white space. 
+
+The funtion will convert columns to logical, integer, numeric, complex vectors or factors as appropriate automatically. By default, character vectors are always stored as factors in a data frame (this behavior can be turned off by setting `stringsAsFactors = FALSE`). 
+
+Once the data is loaded, we assign the data frame to a variable for later reference.
+
+
+## Exploring the Data Frame
+
+Before we do anything else, it is important to understand the structure of the data and that of any objects derived from it.
+
+```{r}
+typeof(default_data) 
+length(default_data)
+class(default_data)
+str(default_data)
+```
+
+The `dim()` function can be used to obtain the dimensions of the data frame (number of rows and number of columns). The `nrow()` and `ncol()` functions can be used to get the number of rows and number of columns, respectively.
+
+```{r}
+dim(default_data)            
+nrow(default_data)            
+ncol(default_data)          
+```
+
+Provide your code that uses `dim()` in conjunction with a subsetting operation instead of `nrow()` to get the number of rows:
+
+```{r question_1}
+dim(default_data)[1]
+```
+
+These are commands for obtaining an intuitive idea of what the data look like without revealing the entire data set, which could have millions of rows and thousands of columns. The `head()` function is used to obtain the first *n* observations and the `tail()` function to obtain the last *n* observations.
+
+```{r}
+head(default_data)           # extract the first few (default to 6) rows
+head(default_data, n = 10) 
+```
+
+Provide your code to display the last 5 rows:
+
+```{r question_2}
+# Edit your code here
+tail(default_data, n=5)
+```
+
+`summary()` can be used to produce summaries of a data object. When it is applied to a **data frame**, this function is essentially applied to each column, and the results for all columns are shown together.  
+
+For a continuous (numeric) variable like **balance** and **income**, this function returns 5 **descriptive statistics** for it:
+
+* minimum
+* 1st quartile
+* median
+* 3rd quartile
+* maximum.  
+
+If there are any missing values (denoted by `NA`), it would also provide a count for them.  In this example, there are no missing values, so there is no display for the number of `NA`'s. 
+
+For a categorical variable stored as a factor like **default**, it returns the levels and the number of cases in each level.  
+
+```{r}
+summary(default_data)
+str(default_data$student)
+```
+
+The assignment form of the `levels()` function can be used to change the labels of a factor. Provide the code that converts **default** to take logical values, with `No` mapped to `FALSE` and `Yes` to `TRUE`. 
+
+```{r question_3}
+# Edit your code here
+levels(default_data$default)<-c("F", "T")
+default_data$default<-as.logical(default_data$default)
+class(default_data$default)
+summary(default_data)
+head(default_data)
+```
+
+As we will learn, plotting is another powerful tool available in R to explore the data.
+
+```{r class-distribution-figure, echo=FALSE}
+
+with(default_data, plot(balance, income, main ="Balance and Income between Defaulters and Non-Defaulters", type="n")) 
+with(subset(default_data,default == F), points(balance, income, col = "steelblue1")) 
+with(subset(default_data, default == T), points(balance, income, col = "salmon1", pch = 3)) 
+legend("topright", pch = c(1,3), col = c("steelblue1", "salmon1"), legend = c("Non-defaulters", "Defaulters"))
+```
+
+
+## Subsetting and Querying the Data Frame
+
+
+We can produce two pairs of boxplots to graphically depict how numeric values of **balance** and **income** differ between non-defaulters and defaulters through their quartiles.
+
+```{r boxplot, message=FALSE, echo=FALSE}
+par(mfrow = c(1, 2), mar = c(4, 4, 2, 1), oma = c(0, 0, 2, 0))
+with(default_data,{
+  boxplot(balance ~ default , xlab = "Default", ylab = "Balance", col=c("steelblue1","salmon1"))
+  boxplot(income ~ default , xlab = "Default", ylab = "Income",   col=c("steelblue1","salmon1"))
+  })
+```
+
+Provide your code to calculate the medians corresponding to the four boxes (Hint: `median()`)
+
+```{r question_4}
+# Edit your code here
+# Expected Value:802.8571, 1789.093, 34589.49, 31515.34
+
+median(default_data[default_data$default==FALSE,3])
+median(default_data[default_data$default==TRUE,3])
+median(default_data[default_data$default==FALSE,4])
+median(default_data[default_data$default==TRUE,4])
+```
+
+

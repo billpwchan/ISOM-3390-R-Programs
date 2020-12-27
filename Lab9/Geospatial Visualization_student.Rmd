@@ -1,0 +1,201 @@
+---
+title: "Lab 9: Geospatial Visualization for the US 2016 Presidential Election"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, tidy = TRUE, warning = FALSE)
+```
+
+Before proceeding to the formal tutorial, make sure the `tidyverse` and the `maps` package (`help(package = "maps")` to see its documentation) are installed in your lab computer.
+
+```{r}
+if(!require(maps)) install.packages("maps")
+if(!require(tidyverse)) install.packages("tidyverse")
+library(maps)
+library(tidyverse)
+```
+
+
+In today’s lab, we are going to use the tools provided by `ggplot2` and geospatial data shipped in the `maps` package to create a county-level choropleth map to visualize the results of the US 2016 Presidential Election.
+
+![](county_choropleth.png)
+
+The `maps` package contains tools and datasets that facilitate drawing geographical maps. For example, the `map()` function can be used to draw lines and polygons as specified by a map database.
+
+```{r}
+# map of the world
+maps::map() # :: is used to avoid the conflict with map() from other packages
+maps::map(database = "county", regions = "new jersey")
+```
+
+The `county` database contains the geospatial data for the counties of the United States mainland (without Alaska and Hawaii). 
+
+`map_data()` in `ggplot2` can easily turn data from the `maps` package into a data frame suitable for plotting with `ggplot2`. Execute the following code to create a tibble that holds the geospatial data for the US counties:
+
+```{r}
+county <- as_tibble(map_data("county"))
+county
+```
+
+The first two columns contains longitudes and latitudes of county borders. Because a county can be made up of seperate regions, each being represented by a geometry, the data frame has the `group` variable used to group the coordinates of the border for every geometry. `order` gives the order in which these coordinates are sequenced to form the border of a geometry.
+
+The county-level map can be rendered by executing the following code:
+
+```{r}
+county_map <- ggplot(county) + geom_polygon(aes(long, lat, group = group),
+                                            colour = "black", fill = "lightgray")  +
+  theme_bw()
+county_map
+```
+
+### **Task 1**: Use `filter()` in `dplyr` and `ggplot() + geom_polygon()` to plot the map for `alabama`
+
+You can use `colour = "black", fill = "lightgray"`, `theme_bw()`, and `coord_fixed()` to make the map have a better look.
+
+```{r}
+# Edit Here
+alabama_map <- ggplot(county %>% filter(region == "alabama")) + geom_polygon(aes(long, lat, group = group),
+                                            colour = "black", fill = "lightgray")  +
+  theme_bw() + coord_fixed()
+
+alabama_map
+
+
+
+
+```
+
+We may want to place a new layer on the county-level map to delineate the borders of different states. To do so, we can use the state-level geospatial data shipped in the `state` database. 
+ 
+```{r}
+state <- as_tibble(map_data("state"))
+state
+```
+
+
+### **Task 2**: Add state borders onto `county_map`
+
+You can use `colour = "steelblue1", fill =  NA, size = 0.6` for these aesthetics applied to all borders.
+
+```{r}
+# Edit Here
+county_map <- ggplot(county) + geom_polygon(aes(long, lat, group = group), colour = "black", fill = "lightgray")  + geom_polygon(aes(long, lat, group = group), state, colour = "steelblue1", fill =  NA, size = 0.6) + 
+  theme_bw()
+county_map
+
+
+```
+
+
+To visualise the county-level result for the 2016 presidential election, we need to get the data from the [Web](https://raw.githubusercontent.com/tonmcg/US_County_Level_Election_Results_08-16/master/2016_US_County_Level_Presidential_Results.csv). 
+
+
+
+```{r}
+options(width = 120) # increase the width of the printing region to show all columns
+(election_result <- read_csv("https://raw.githubusercontent.com/tonmcg/US_County_Level_Election_Results_08-16/master/2016_US_County_Level_Presidential_Results.csv", col_names = TRUE) %>% select(fips = combined_fips, everything(), -X1))
+```
+ 
+
+The `election_result` tibble has a column named `fips` containing the FIPS (short for Federal Information Processing Standards) county codes that each identify a county. We will use this column to relate the election data to the geospatial data by calling upon a join operation. 
+
+However, `county` does not have such a column. The `maps` package provides a database named `county.fips` that helps match FIPS codes to county and state names.
+
+```{r}
+ (county_fips <- as_tibble(county.fips))
+```
+ 
+
+We should first augment the `county` tibble with the `fips` column by using the following code:
+ 
+```{r}
+(county <- county %>% unite(polyname, region, subregion, sep = ",") %>% inner_join(county_fips, by = "polyname"))
+```
+
+Now, we can join the geospatial data in `county` and the election data in `election_result` by referring to their common attribute `fips`. Here we use `right_join()`, because the election data can be missing for some counties. Also note that this transformation removes the election data for Alaska and Hawaii at the same time, because `county` only has the geospatial data for the counties of the United States mainland.
+
+```{r}
+election_geo_result <- election_result %>% right_join(county, by = "fips")
+head(election_geo_result)
+```
+
+The following code use `election_geo_result` to render the choropleth map. The regions in red (`"#e41a1c"`) represent republican-winning counties, while those in blue (`#377eb8`) represent democrat-winning counties. The `fill` aesthetic maps the difference in percentage of votes received by two parties. The color scheme is specified by `scale_fill_gradient2()`.
+
+```{r tidy = FALSE eval = FALSE}
+election_map <- election_geo_result %>% ggplot(aes(long, lat, group = group)) + 
+  geom_polygon(aes(fill = per_dem - per_gop)) + 
+  geom_polygon(data = state, aes(long, 
+    lat, group = group), colour = "#bdbdbd", fill = NA, size = 0.6) +
+  scale_fill_gradient2(low = "#e41a1c", mid = "white", high = "#377eb8") +
+  coord_fixed(1.4) + theme_bw()
+election_map
+```
+
+### **Task 3**: Decorate `election_map` 
+
+
+1. relabelling the legend title to "Trump vs. Hillary" (`scale_fill_gradient2()`'s `name`).
+2. show the legend's tick marks only at -1 and 1. Label them with "Trump Won" and "Hillary Won", respectively (`scale_fill_gradient2()`'s `breaks`, `labels`, and `limits`).
+3. suppress the axis labels for both axes (`labs()`).
+4. moving the legend from left to top (`legend.position` in `theme()`; `?theme` to see all accepted arguments).
+
+```{r}
+# Edit Here
+election_map <- election_geo_result %>% ggplot(aes(long, lat, group = group)) + 
+  geom_polygon(aes(fill = per_dem - per_gop)) + 
+  geom_polygon(data = state, aes(long, 
+                                 lat, group = group), colour = "#bdbdbd", fill = NA, size = 0.6) +
+  scale_fill_gradient2(low = "#e41a1c", mid = "white", high = "#377eb8", name = "Trump vs. Hillary", labels = c("-1" = "Trump Won", "1"="Hillary Won"), breaks=c(-1,1), limits=c(-1,1)) +
+  coord_fixed(1.4) + theme_bw() +   
+  theme(axis.title.x=element_blank(),
+        axis.title.y=element_blank(),
+        legend.position = "top"
+  )+ guides(fill = guide_legend(title.position = "top", title.hjust = 0.5)) +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50, xlim = c(-122, -72), ylim = c(25, 50))
+election_map
+
+
+
+```
+
+You can add the following two more components to your code to further improve the appearance of the plot.
+
+
+```{r , tidy = F, eval=FALSE}
+... + guides(fill = guide_legend(title.position = "top", title.hjust = 0.5)) +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50, xlim = c(-122, -72), ylim = c(25, 50))
+```
+
+
+
+### What's More?
+
+Because geo-based data analysis becomes prevalent nowadays, `ggplot2` provides `geom_map()` as a handy tool to plot variables on a reference map.
+
+```{r}
+str(geom_map)
+```
+
+In its parameter list, `map` is used to take a data frame that provides the map coordinates. This data frame must contain columns `x` or `long`, `y` or `lat`, and `region` or `id`.
+
+Recall that our `county` tibble uses `fips` to identify a county, and has no columns named `region` or `id`. Therefore, to use `county` as a reference map, we need to create either an `id` or a `region` column:
+
+
+```{r}
+county <- county %>% mutate(id = fips)
+```
+
+Moreover, `geom_map()` requires a special aesthetic named `map_id` to match the variable to be plotted (`per_dem - per_gop` as before) to geographics in a map. Recall that we used `fips` to identify a county in `election_result`.
+
+```{r tidy=F}
+election_result %>% ggplot(aes(fill = per_dem - per_gop, map_id = fips)) + geom_map(map = county) + 
+  expand_limits(x = county$long, y = county$lat) +
+  scale_fill_gradient2(low = "#e41a1c", mid = "white", high = "#377eb8") +
+  coord_fixed(1.4) + theme_bw()
+```
+
+The `right_join()` step we used to relate the two types of data before is no longer needed.
+
+
+

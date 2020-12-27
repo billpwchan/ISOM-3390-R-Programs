@@ -1,0 +1,83 @@
+---
+title: "Lab 7: Practicing `dplyr` Verbs and Base Plotting"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, tidy=TRUE, message = F)
+
+```
+
+Before proceeding to the formal exercise, make sure the `tidyverse` collection is installed in your lab computer.
+
+```{r results='hide', message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+Sociological studies of the diffusion of innovations focus on identifying "early adopters" and examine how innovations "spread"" from them to others. In this lab, we will look at a dataset that tracks how an antibiotic named tetracycline spread among doctors in Illionis in the 50s. The <span style="color:blue">ckm_nodes.csv</span> file contains information about each individual doctor. 
+
+Load the dataset to create a tibble named <span style="color:blue">ckm_nodes</span> using `read_csv()` from the `readr` package:
+
+```{r}
+ckm_nodes<-read_csv("https://drive.google.com/uc?export=download&id=12r_nJJKXNT_AynQ3EsktTsE-YTOrQmZO",col_names = TRUE)
+ckm_nodes
+```
+
+Check that it has 246 rows and 13 columns.
+
+```{r}
+dim(ckm_nodes)
+```
+
+<span style="color:blue">adoption_date</span> records the month in which the doctor began prescribing the antibiotic counting from a fixed point in time. If the doctor did not begin prescribing it by month 17, this is recorded as `Inf`. If it's not known when or if a doctor adopted the then-new antibiotic, the value is `NA`.
+
+a. How many doctors began prescribing the antibiotic in each month of the study? How many never prescribed? How many are `NA`s? Hint: `table()` in base R or `group_by()`, `summarise()` and `n()` in the `dplyr` package.
+
+```{r}
+# Edit your code here
+
+table(ckm_nodes$adoption_date, useNA = c('ifany'))
+
+
+```
+
+b. Subset doctors for whom <span style="color:blue">adoption_date</span> is not `NA`. Re-assign this subset to <span style="color:blue">ckm_nodes</span> so it only contains those rows. Check that this vector has length 125. Use this cleaned version of `ckm_nodes` for the rest of the exercise. Hint: `filter()` in `dplyr`.
+
+```{r}
+# Edit your code here
+
+
+ckm_nodes = filter(ckm_nodes, !is.na(adoption_date))
+
+
+
+dim(ckm_nodes)
+```
+
+c. Create plots of the number of doctors who began prescribing tetracycline each month versus time. (It is OK for the numbers on the horizontal axis to just be integers rather than formatted dates.) 
+
+```{r}
+# Edit your code here
+
+m = group_by(ckm_nodes, adoption_date)
+
+m = summarise(m, count = n())
+plot(m$adoption_date, m$count, type="l")
+
+```
+
+d. Produce a plot of the total number of adopters in each month. The curve for total adoptions should first rise rapidly and then level out around month 6. Hint: `mutate()` and `cumsum()`.
+
+```{r}
+# Edit your code here
+
+m$count <- cumsum(m$count)
+plot(m$adoption_date, m$count, type="l")
+
+
+
+
+```
+

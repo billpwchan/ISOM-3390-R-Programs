@@ -1,0 +1,103 @@
+---
+title: "Lab 10: Web Scraping"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, tidy = TRUE)
+```
+
+Before proceeding to the exercise, make sure the `tidyverse` is installed in your lab computer.
+
+```{r}
+library(tidyverse)
+library(rvest)
+```
+
+In today's lab, we are going to use the functions provided by the `rvest` package to scrape data available on a Amazon product web page. 
+
+
+
+We start with a [seed page](https://www.amazon.com/dp/013454692X/), and find the product pages to be scraped sequentially by looking at items displayed in the 1st "Sponsored products related to this item" carousel. Each product item in this carousel are structured as an HTML list item node delineated by the <li> tag with `class="a-carousel-card"`.
+
+The following commands download the source code, and extract these list item nodes for use.
+
+
+
+```{r}
+webpage <- read_html("https://www.amazon.com/dp/013454692X/")
+
+(results <- html_nodes(webpage, ".a-carousel-card") %>% .[1:7]) # subset the items from the 1st carousel
+results[1] %>% toString() %>% writeLines() # print the HTML source code of the 1st item for inspection
+```
+
+Note that the title of the corresponding book (i.e., *Big Data Analytics with R: Leverage R Programming to uncover hidden patterns in your Big Data*) can be spotted at several places in the above code; for example, the `alt` attribute of a `<img>` tag,  the `title` attribute of several `<a>` tags, the text (truncated) enclosed by a pair of <div> tags of both the `sponsored-products-truncator-truncate` class and `sponsored-products-truncator-line-clamp-4` classe, etc.
+
+Let's inspect the code passage below closely:
+
+```
+<div data-rows="4" aria-hidden="true" class="sponsored-products-truncator-truncate sponsored-products-truncator-line-clamp-4">Big Data Analytics with R: Leverage R Programming to uncover hidden patterns in you...</div>
+```
+
+Note that `class="sponsored-products-truncator-truncate sponsored-products-truncator-line-clamp-4"` contains a space in the value part. We know that a space, when used to construct a css selector, means selecting the second node/element inside the first node/element, as the second node/element is the child of the first node/element in the document's hirerarchy.
+
+Here, the space means a different thing. When spaces are used in the class value, it means the element belongs to both the `sponsored-products-truncator-truncate` class and the `sponsored-products-truncator-line-clamp-4` class. Therefore, we can tell the program to identify this element with either one. Or if we want to match only elements that are of both classes (so as to skip those elements blelonging to either class), using `".sponsored-products-truncator-truncate.sponsored-products-truncator-line-clamp-4"` without space as the selector. So we can extract the (truncated) titles of all the 7 books by running the following
+
+```{r}
+(titles <- results%>%html_node(".sponsored-products-truncator-truncate.sponsored-products-truncator-line-clamp-4") %>% html_text(trim = TRUE))
+```
+
+Provide the code to extract authors, ratings, and prices for the 7 books and convert them from string form to appropriate types:
+
+```{r}
+# edit here
+
+authors <- results%>%html_node(".a-row.a-size-small.sp-dp-ellipsis.sp-dp-author")%>%html_text(trim = TRUE)
+ratings <- results%>%html_node(".a-color-link")%>%html_text(trim = TRUE)
+prices <- results%>%html_node(".a-color-price")%>%html_text(trim = TRUE)
+
+print(authors)
+print(ratings)
+print(prices)
+ 
+
+```
+ 
+
+The URLs of the product webpages for the 7 books can be extracted by using `html_attr()`. Provide your code below:
+
+```{r}
+# edit here
+urls <- results%>%html_node(".a-link-normal")%>%html_attr("href")
+urls
+
+
+```
+
+Comparing these urls with the url of the seed page (<https://www.amazon.com/dp/013454692X/>) reveals that the raw are relative ones. Besides, some part of them are used for the purpose other than locating the product webpages (e.g., tracking referring sources). We want to remove the irrelevant part and use the remaining (the part contained in the value part of the substring `"url=%2Fdp%2F1786466457%2F"` with all `"%2F"` replaced by `"/"`) to form absolute urls for later use.
+
+```{r}
+
+# edit here
+urls <- urls%>%str_replace_all("%2F", "/")
+substring(urls, str_locate(urls, "url=")[1], last = 1000000L)
+
+
+```
+
+Now we are ready to create a tibble named `product.data` having columns on titles, authors, ratings, prices, urls for later use:
+
+```{r}
+# edit here
+ 
+product.data <- data.frame("titles" = titles, "authors" = authors, "ratings" = ratings, "prices" = prices, "urls" = urls)
+product.data
+
+
+```
+
+ 
+
+

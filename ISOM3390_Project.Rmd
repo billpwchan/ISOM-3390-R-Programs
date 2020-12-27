@@ -1,0 +1,187 @@
+---
+title: "ISOM3390 Final Project---Text Mining"
+author: "Bill Chan"
+date: "2018/11/28/"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, tidy = FALSE)
+```
+
+##Question 2: *Question Description*
+* The starting point could be this webpage (https://www.imdb.com/chart/moviemeter?
+sort=rk,asc&mode=simple&page=1)
+* Collect user reviews (and ratings) for 100 movies, 100 reviews per movie (with spoilers excluded).
+* Sample 2500 positive reviews and 2500 negative reviews to form a review corpus.
+* Use list-based measures to predict sentiments, and evaluate outcomes by contrasting them with actual ratings.
+* Find 10 most commonly-used positive and negative words in the corpus. For each word, plot its likelihood of
+occurring in reviews with different ratings.
+
+#### Step 1: Import necessary libraries
+```{r}
+library(tidyverse)
+library(rvest)
+library(stringr)
+library(RSelenium)
+library(tidytext)
+library(RTextTools)
+library(ggplot2)
+```
+
+
+#### Step 2: Read Most-popular movies listed on IMDB Website. 
+```{r}
+webpage <- read_html("https://www.imdb.com/chart/moviemeter?sort=rk,asc&mode=simple&page=1")
+# webpage2 <- read_html("https://www.imdb.com/chart/moviemeter?sort=rk,asc&mode=simple&page=2")
+```
+
+#### Step 3: Data Preparation
+* Prepare the Movie, Rating and Link Dataset. 
++ For some movies, the rating is abscent. A rating of "0.0" is replaced for all movie that has no rating posted on IMDB website. 
++ In total *100* movies are listed on the website, but only 80 out of 100 contains an IMBD rating, while the remaining are not released yet until the date of this assignment completion. 1 out of 80 movies do not contain any review, so only 79 movies are recorded for further review scrapping.
+
+```{r tidy=TRUE}
+movieInfo <- function(webpage) {
+  results <- webpage %>% html_nodes(".article") 
+  names <- results %>% html_nodes(".titleColumn") %>% html_nodes("a") %>% html_text(trim = TRUE)
+  
+  links <- results  %>% html_nodes(".titleColumn") %>% html_nodes("a")  %>% html_attr("href")
+  links <- links %>% sapply(function(x) str_split(x, "/")) %>% sapply(function(x) paste("https://www.imdb.com/title/", x[3], '/reviews?spoiler=hide&sort=helpfulnessScore&dir=desc&ratingFilter=0', sep = ""))
+  
+  ratings <- results %>% html_nodes(".ratingColumn") %>% html_text(trim = TRUE)
+  ratings <- sapply(ratings[c(TRUE, FALSE)], function(x) {if (x == "") "NA" else x})
+  newlist <- list(names = names, ratings = ratings, links = links)
+}
+
+page1 <- movieInfo(webpage)
+# page2 <- movieInfo(webpage2)
+movies <- data.frame(names = page1$names, ratings = page1$ratings, links = page1$links)
+row.names(movies) <- NULL
+# Mowgli & Mary Queen of Scots have no review at all. 
+movies <- movies[movies$ratings != "NA" & movies$names != "Mowgli" & movies$names != "Mary Queen of Scots", ]
+movies
+
+```
+
+* This function will get the *Review Content* and *Review Rating* for every movie based on its link. It is observed that some review does not have any rating, which a rating of 0 will be replaced for these reviews. 
+
+```{r}
+getReviewDetail <- function(page_source) {
+  review_content <- page_source %>% read_html() %>% html_nodes(".article") %>% html_nodes(".text") %>% html_text(trim = TRUE)
+  review_rating <- page_source %>% read_html() %>% html_nodes(".lister-item-content") %>% html_node(".ipl-ratings-bar") %>% html_text(trim = TRUE) %>% sapply(function(x) if (is.na(x)) 0 else as.integer(str_split(x, "/", n = 2)[[1]][1])) %>% unname(review_rating)
+  data.frame(rating = review_rating, content = review_content)
+}
+```
+
+* The following script will iterate all links extracted previously, then use selenium to scrap corresponding reivew content and ratings for each movie. The result will be stored into a .csv file for further process. 
+
+```{r eval=FALSE}
+movieSummary <- data.frame(rating = c(), content = c(), name = c())
+remDr <- remoteDriver(remoteServerAddr = "localhost", port = 4445L, browserName = "chrome")
+remDr$open(silent = TRUE)
+apply(movies, 1, function(movie) {
+  remDr$navigate(as.character(movie[3]))
+  for (i in c(1:6)) {
+    possibleError <- tryCatch({
+      loadmore <-remDr$findElement(using = "id", value = "load-more-trigger")
+      loadmore$clickElement()
+    }, error = function(e) {
+        e
+    })
+    if(inherits(possibleError, "error")) break
+    Sys.sleep(3)
+  }
+  page_source <- remDr$getPageSource() %>% .[[1]]
+  movieSummary <<- getReviewDetail(page_source) %>% cbind(name=as.character(movie[1])) %>% rbind(movieSummary)
+})
+write.csv(movieSummary,'movieSummary.csv')
+
+```
+
+####Step 4: Extract positive reviews and negative reviews 
+* Select the top 10 or 37 reviews for each movie to form 2500 Positive & Negative review samples. 
++ Consider reviews that have rating greater or equal to 6 as a positive review, while reviews that have rating less than 6 as a negative review.
+
+```{r}
+movieSummary <- read_csv('movieSummary.csv')
+names(movieSummary) <- c("RowIndex", "rating", "content", "name")
+movieSummary <- movieSummary[movieSummary$rating != '0',]
+movieSummary <- movieSummary[sample(nrow(movieSummary)),] %>% select(name, content, rating)
+positiveReview <- movieSummary[movieSummary$rating >= 6,] %>% head(2500)
+negativeReview <- movieSummary[movieSummary$rating < 6,] %>% head(2500)
+movieSummary <- rbind(positiveReview, negativeReview)
+```
+
+```{r}
+positiveReview
+```
+
+```{r}
+negativeReview
+```
+#### Step 5: Sentiment Analysis
+* Calculate the sentiment for every review of every movie. The actual rating is listed on the rightmost column for comparison.
+
+```{r}
+
+movieSentiment <- movieSummary %>% group_by(name) %>% mutate(reviewNum = row_number()) %>% ungroup() 
+
+movieListBasedMeasure <- movieSentiment %>% unnest_tokens(word, content) %>% filter(!str_detect(word, "^[0-9]*$")) %>% anti_join(stop_words) %>% inner_join(get_sentiments("bing")) %>% count(name, index = reviewNum, sentiment) %>% spread(sentiment, n, fill = 0) %>% mutate(sentiment = positive - negative) %>% left_join(movieSentiment, by = c("name" = "name", "index" = "reviewNum"))
+names(movieListBasedMeasure) <- c("MovieName", "ReviewNum", "Negative", "Positive", "Sentiment", "Content", "ActualRating")
+movieListBasedMeasure <- movieListBasedMeasure[, c(1,2,3,4,5,7)]
+movieListBasedMeasure$Prediction <- ((movieListBasedMeasure$Sentiment < 0 & movieListBasedMeasure$ActualRating < 5) | movieListBasedMeasure$Sentiment >= 0 & movieListBasedMeasure$ActualRating >= 5)
+movieListBasedMeasure
+```
+
+* There are in total 7652 reviews are predicted correctly using sentiment analysis, while 2959 reviews are predicted incorrectly. In this stage, I decided to use the entire extracted reviews (With 10950 reviews in total) instead of the formed 5000 samples, to get a better overview on the accuracy of sentiment analysis over the data.
+```{r}
+movieListBasedMeasure %>% count(Prediction)
+```
+
+* Extract words with most occurance in both positive and negative reviews.
+```{r}
+wordCount <- movieSentiment %>% unnest_tokens(word, content) %>% filter(!str_detect(word, "^[0-9]*$")) %>% anti_join(stop_words) %>% inner_join(get_sentiments("bing"))
+positiveWords <- wordCount[wordCount$sentiment=="positive",] %>% count(word, sort = TRUE) %>% head(10)
+negativeWords <- wordCount[wordCount$sentiment=="negative",] %>% count(word, sort = TRUE) %>% head(10)
+wordCount
+```
+
+```{r}
+positiveWords
+```
+
+```{r}
+negativeWords
+```
+
+* Plot the corresponding chart with its possibility to occur in different ratings. 
+```{r}
+positiveChart <- positiveWords %>% left_join(wordCount, by = c("word" = "word"))
+positiveChart <- positiveChart[, c(1,4)] %>% group_by(word, rating) %>% summarise(number = n())
+positiveChart
+positiveChart %>% group_by(word) %>% mutate(percent = number/sum(number)) %>% ungroup() %>% ggplot(aes(x=rating, y=percent, group=word, fill = word)) + 
+  geom_line(aes(color=word)) + 
+  geom_point(aes(color=word)) + 
+  labs(x = "Rating", y = "Pr(C|W)") +
+  scale_x_continuous(breaks = positiveChart$rating, labels = positiveChart$rating, expand = c(0, 0)) +
+  facet_wrap(~ word, scales = "free") +
+  theme_minimal() +
+  theme(legend.position="none")
+```
+
+```{r}
+negativeChart <- negativeWords %>% left_join(wordCount, by = c("word" = "word"))
+negativeChart <- negativeChart[, c(1,4)] %>% group_by(word, rating) %>% summarise(number = n())
+negativeChart
+negativeChart %>% group_by(word) %>% mutate(percent = number/sum(number)) %>% ungroup() %>% ggplot(aes(x=rating, y=percent, group=word, fill = word)) + 
+  geom_line(aes(color=word)) + 
+  geom_point(aes(color=word)) + 
+  labs(x = "Rating", y = "Pr(C|W)") +
+  scale_x_continuous(breaks = negativeChart$rating, labels = negativeChart$rating, expand = c(0, 0)) +
+  facet_wrap(~ word, scales = "free") +
+  theme_minimal() +
+  theme(legend.position="none")
+```

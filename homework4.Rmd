@@ -1,0 +1,135 @@
+---
+title: "Homework 4"
+author: "Chan Pok Wah"
+output:
+  html_document:
+    highlight: tango
+    theme: paper
+    toc: yes
+    toc_depth: 3
+---
+
+Before proceeding to solve the problems, make sure the `tidyverse` collection and the `maps` package is installed in your computer. 
+
+Note that some of the code blocks in this assignment contain the expression `eval = FALSE`. This tells R Markdown to display the code contained in the block, but not to evaluate it. Remove it if you want to turn off this behavior.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+library(tidyverse)
+```
+
+
+### Task 1: Plotting a choropleth map with `ggplot() + geom_map()`
+
+The `maps` library has a variety of map datasets. Here we are going to use the dataset of the states of the United States mainland, named `state`, to create the reference map. It includes the latitute and longitude coordinates for the boundaries of the states. 
+
+```{r}
+library(maps) 
+(states <- map_data("state") %>% as_tibble()) # Create a data frame holding the map data
+```
+
+We are going to visualize state crime rates on the reference map. The `USArrests` dataset in base R contains this information, giving statistics, in arrests per 100,000 residents for assault, murder, and rape in each of the 50 US states in 1973. 
+
+```{r}
+head(USArrests)
+```
+
+In this dataset, state names are stored as row names. In order to relate individual records to the map data, we need to convert the row name to a column named `region`. Row names of a regular data frame can be accessed using `row.names()`. Please also lowercase all state names in the resulting column (using `tolower()`):
+
+```{r}
+# Edit Here
+USArrests$region <- tolower(row.names(USArrests))
+head(USArrests)
+```
+
+Now we are ready to create a choropleth map showing, for example, `Murder` rates using `ggplot() + geom_map()` (reference the **What's More** section in the tutorial for **Geospatial Visualizatio**). You may want to change the legend position to top (`theme(legend.position = "top")`):
+
+```{r  }
+# Edit Here
+murder_by_state <- USArrests %>% right_join(states, by = 'region')
+murder_by_state %>% ggplot(aes(fill = murder_by_state$Murder, map_id = region)) + 
+  geom_map(map = states) + 
+  expand_limits(x = states$long, y = states$lat) +
+  scale_fill_gradient(name = "Murder Rate by State") +
+  coord_fixed(1.4) + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank())
+
+```
+
+ 
+In the plot created above, it may be counter-intuitive that light blue (`"#56B1F7"`) indicates areas with high murder rates while dark blue (`"#132B43"`) indicates areas with low murder rates. Reverse the colour gradient using the `scale_fill_gradient()` and plot the revised choropleth map (`?scale_fill_gradient` if needed): 
+
+```{r}
+str(scale_fill_gradient) # All we have to do is to swap the defaults for low and high
+```
+
+```{r }
+# Edit Here
+murder_by_state %>% ggplot(aes(fill = murder_by_state$Murder, map_id = region)) + 
+  geom_map(map = states) + 
+  expand_limits(x = states$long, y = states$lat) +
+  scale_fill_gradient(low = '#56B1F7', high = '#132B43', name = "Murder Rate by State") +
+  coord_fixed(1.4) + 
+  theme_bw() + 
+  theme(legend.position = "top",
+        axis.title.x=element_blank(),
+        axis.title.y=element_blank())
+
+```
+ 
+### Task 2: How Often Did Trump Mention His Competitors in the 2016 Presidential Campaign? 
+
+
+[FiveThirtyEight](http://fivethirtyeight.com/), a data journalism site devoted to politics, sports, science, economics, and culture, has published several articles based on analysing Trump's tweets.
+
+The article titled [*The World's Favorite Donald Trump Tweets*](https://fivethirtyeight.com/features/the-worlds-favorite-donald-trump-tweets/) includes a figure showing the number of times Trump mentioned his primary competitors in the 2016 Presidential Campaign. 
+
+<div><img src="https://fivethirtyeight.com/wp-content/uploads/2016/06/libresco-nield-trumptweets-1.png" width = "65%"></img>
+
+In order to reproduce this graphic, we need to analyse the text of Trump's tweets to identify candidates having been mentioned. A candidate is considered having been mentioned if her/his last name, first name, full name or twitter username appeared in the tweet. We restrict our analysis to the following candidates: John Kasich, , and to the period from  Oct. 1st, 2015 to Jul. 30th, 2016.
+Jeb Bush, Hillary Clinton, Ted Cruz, and Marco Rubio
+Use appropriate string operations in `stringr` together with **regular expressions** to analyze the text of tweets store in the [csv file](https://raw.githubusercontent.com/sashaperigo/Trump-Tweets/master/data.csv) (save it on your local disk and load it into R using `read_csv()`).
+
+
+The result should be an R data frame (**NOTE: plotting is not required**) having 4 columns as follows:
+
+ - `Tweet`: ids of a tweet;
+ - `Date`: the date the message got tweeted;
+ - `Candidate`: the candidate's capitalised last name iif s/he was mentioned in the tweet. (`toupper()` can be used).
+ 
+```{r }
+twitter <- read_csv("data.csv")
+
+twitter$Date <- strptime(twitter$Date, "%Y/%m/%d %H:%M")
+twitter <- twitter[(twitter$Date >= strptime('2015/10/01', "%Y/%m/%d")) & (twitter$Date < strptime('2016/07/31', "%Y/%m/%d")),]
+
+twitter$Candidate <- ""
+
+# Since simply detect "John" or "Kasich" will result in lots of distraction records (The twitter might mention other people with name John / Kasich, so I decided to use both Lastname & Firstname occurance as flag)
+
+twitter[(str_detect(twitter$`Text`, "John+") & 
+     str_detect(twitter$Text, "Kasich+")) | 
+    str_detect(twitter$Text, "@JohnKasich+"), "Candidate"] <- toupper("Kasich")
+twitter[(str_detect(twitter$Text, "Jeb+") &
+       str_detect(twitter$Text, "Bush+") |
+       str_detect(twitter$Text, "@JebBush+")), "Candidate"] <- toupper("Bush")
+twitter[(str_detect(twitter$Text, "Ted+") &
+       str_detect(twitter$Text, "Cruz+") |
+       str_detect(twitter$Text, "@tedcruz+")), "Candidate"] <- toupper("Cruz")
+twitter[(str_detect(twitter$Text, "Hillary+") &
+       str_detect(twitter$Text, "Clinton+") |
+       str_detect(twitter$Text, "@HillaryClinton+")), "Candidate"] <- toupper("Clinton")
+twitter[(str_detect(twitter$Text, "Marco+") &
+       str_detect(twitter$Text, "Rubio+") |
+       str_detect(twitter$Text, "@macrorubio+")), "Candidate"] <- toupper("Rubio")
+
+options(scipen=999)
+twitter$`Tweet ID` <- as.character(twitter$`Tweet ID`)
+twitter$Date <- as.character(twitter$Date)
+result <- twitter[twitter$Candidate != "" , c("Tweet ID", "Date", "Candidate")] %>% as.data.frame()
+result
+
+```
